@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>나만의 인풋 허브 (실시간 동기화)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>나만의 인풋 허브</title>
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- Quill Rich Text Editor CDN -->
@@ -21,7 +21,6 @@
     --border-subtle: #e2e8f0;
     --text-primary: #0f172a;
     --text-muted: #64748b;
-    --text-sub: #94a3b8;
   }
 
   body {
@@ -30,21 +29,19 @@
     background-color: var(--bg-canvas);
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    height: 100vh;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* 파스텔 마스킹 테이프 뱃지 스타일 */
+  /* 파스텔 마스킹 테이프 뱃지 */
   .tape {
     display: inline-flex;
     align-items: center;
-    padding: 2.5px 8px;
+    padding: 2.5px 7.5px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: -0.01em;
     border-radius: 4px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-    position: relative;
     border: 1px solid transparent;
     white-space: nowrap;
   }
@@ -56,95 +53,91 @@
   .tape-teal    { background: #ccfbf1; color: #115e59; border-color: #99f6e4; border-left: 3.5px solid #14b8a6; }
   .tape-indigo  { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; border-left: 3.5px solid #6366f1; }
   .tape-slate   { background: #f1f5f9; color: #334155; border-color: #e2e8f0; border-left: 3.5px solid #94a3b8; }
-
   .tape-highlight-mint { background: linear-gradient(180deg, transparent 56%, #d1fae5 56%); padding: 0 2px; }
 
-  /* 커스텀 스크롤바 */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  /* 스크롤바 */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-  /* Quill 에디터 스타일 커스텀 */
+  /* Quill 커스텀 */
   .ql-toolbar.ql-snow {
     border: 1px solid var(--border-subtle) !important;
     border-bottom: none !important;
     border-radius: 12px 12px 0 0;
     background: #fbfcfe;
-    padding: 10px 14px;
+    padding: 8px 10px;
   }
   .ql-container.ql-snow {
     border: 1px solid var(--border-subtle) !important;
     border-radius: 0 0 12px 12px;
     background: #ffffff;
     font-family: inherit;
-    font-size: 14.5px;
+    font-size: 14px;
   }
   .ql-editor {
-    min-height: 280px;
-    line-height: 1.8;
-    padding: 18px 20px;
+    min-height: 220px;
+    line-height: 1.75;
+    padding: 14px 16px;
     color: #1e293b;
   }
-  .ql-editor.ql-blank::before {
-    color: #94a3b8;
-    font-style: normal;
+  @media (min-width: 768px) {
+    .ql-editor { min-height: 320px; }
   }
 
-  /* 노션 스타일 전체 폭 전환 */
+  /* 반응형 모달 전환 */
   .modal-sheet {
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .sheet-normal { max-width: 840px; height: 88vh; }
+  .sheet-normal { max-width: 820px; height: 90vh; }
   .sheet-full   { max-width: 96vw;  height: 94vh; }
-  .sheet-full .ql-editor { min-height: 480px; }
 
-  /* 카드 호버 */
+  /* 카드 인터랙션 */
   .input-card {
-    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .input-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.05);
   }
 
-  /* 모달 애니메이션 */
-  @keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.98) translateY(6px); }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.97) translateY(8px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
   }
-  .animate-modal { animation: modalFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-modal { animation: modalIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 </style>
 </head>
 
-<body class="flex h-screen bg-slate-50 antialiased select-none">
+<body class="flex h-screen bg-slate-50 antialiased overflow-hidden">
 
-<!-- 좌측 고정 네비게이션 사이드바 (LNB) -->
-<aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 z-20">
+<!-- 모바일 사이드바 배경 오버레이 -->
+<div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/40 z-30 hidden md:hidden backdrop-blur-xs transition-opacity"></div>
+
+<!-- 좌측 네비게이션 사이드바 -->
+<aside id="mainSidebar" class="fixed inset-y-0 left-0 z-40 w-72 md:w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 transition-transform duration-250 ease-out shadow-xl md:shadow-none md:static">
   <div class="flex flex-col flex-1 overflow-hidden">
-    <!-- 브랜드 로고 및 타이틀 -->
-    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-xs tracking-wider shadow-xs">
+    <!-- 브랜드 로고 & 모바일 닫기 버튼 -->
+    <div class="p-4 md:p-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-xs tracking-wider shadow-xs">
           IH
         </div>
         <div>
-          <h1 class="text-sm font-bold text-slate-800 tracking-tight">인풋 허브</h1>
-          <p class="text-[11px] text-slate-400 font-medium">Cloud Knowledge Hub</p>
+          <h1 class="text-sm font-bold text-slate-800 tracking-tight">나만의 인풋 허브</h1>
+          <p class="text-[10px] text-slate-400 font-medium">Simple Secret Sync</p>
         </div>
       </div>
-      <!-- 실시간 클라우드 연결 상태 표시기 -->
-      <div id="cloudStatusBadge" class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-semibold text-slate-500" title="클라우드 동기화 상태">
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" id="cloudStatusDot"></span>
-        <span id="cloudStatusText">연결중</span>
-      </div>
+      <button id="closeSidebarBtn" class="md:hidden p-1.5 text-slate-400 hover:text-slate-700 text-sm font-bold">
+        ✕
+      </button>
     </div>
 
-    <!-- 네비게이션 메뉴 그룹 -->
-    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+    <!-- 네비게이션 목록 -->
+    <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-4">
       <!-- 1. 개요 & 리포트 -->
       <div>
-        <div class="px-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overview</div>
+        <div class="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overview</div>
         <div class="space-y-1">
           <button class="nav-btn w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-900 font-bold transition-all" data-tab="home">
             <span class="flex items-center gap-2.5">
@@ -161,22 +154,20 @@
         </div>
       </div>
 
-      <!-- 2. 동적 인풋 수집 서랍 (추가 / 맞춤 속성 설정 가능) -->
+      <!-- 2. 동적 인풋 수집 서랍 -->
       <div>
-        <div class="px-3 pb-1.5 flex items-center justify-between">
+        <div class="px-3 pb-1 flex items-center justify-between">
           <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Input Collection</span>
-          <!-- 새 목차 추가 버튼 -->
-          <button id="addCategoryBtn" class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-1.5 py-0.5 rounded transition-all" title="새 인풋 서랍 추가">
+          <button id="addCategoryBtn" class="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-1.5 py-0.5 rounded transition-all">
             ＋ 새 서랍
           </button>
         </div>
-        <!-- 동적 렌더링 영역: 독서, 기사 및 사용자 추가 목차 -->
         <div class="space-y-1" id="dynamicInputNavList"></div>
       </div>
 
-      <!-- 3. 생각 & 구조화 시스템 (3단계 뼈대 고정) -->
+      <!-- 3. 생각 & 구조화 시스템 -->
       <div>
-        <div class="px-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Thought &amp; Synthesis</div>
+        <div class="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Thought Engine</div>
         <div class="space-y-1">
           <button class="nav-btn w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl text-slate-600 hover:bg-slate-50 transition-all" data-tab="concept">
             <span class="flex items-center gap-2.5">
@@ -204,269 +195,186 @@
     </nav>
   </div>
 
-  <!-- 사이드바 하단: 동기화 계정 ID & 생성 버튼 -->
-  <div class="p-4 border-t border-slate-100 space-y-3">
-    <!-- 사용자 고유 식별자 전체 표시 (규칙 준수) -->
-    <div class="px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80">
-      <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold mb-0.5">
-        <span>내 동기화 계정 ID</span>
-        <button id="copyUidBtn" class="text-slate-600 hover:text-slate-900 underline font-semibold text-[10px]">복사</button>
+  <!-- 사이드바 하단: [예전 투두웹 방식] 비밀번호 동기화 박스 -->
+  <div class="p-3 border-t border-slate-100 space-y-2 bg-slate-50/50">
+    <div class="p-2.5 rounded-xl bg-white border border-slate-200">
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+          <span>🔑</span> 동기화 비밀번호
+        </span>
+        <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-emerald-500" title="연결됨"></span>
       </div>
-      <div class="text-[11px] font-mono text-slate-700 truncate font-semibold select-all" id="userUidDisplay">
-        인증 대기중...
+      <p class="text-[10px] text-slate-400 mb-2 leading-relaxed">스마트폰과 노트북에 똑같은 암호를 입력하면 팝업 없이 즉시 이어집니다.</p>
+      
+      <div class="flex gap-1.5">
+        <input id="syncPasswordInput" type="text" placeholder="예: my1234" class="w-full px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 font-mono text-slate-700">
+        <button id="applySyncPasswordBtn" class="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shrink-0 transition-all">
+          연결
+        </button>
+      </div>
+      <div class="text-[9px] text-slate-400 mt-1.5 flex items-center justify-between">
+        <span>현재 서랍: <strong id="currentSyncLabel" class="text-slate-600 font-mono">기본금고</strong></span>
+        <span id="syncStatusText" class="text-emerald-600 font-semibold">실시간 동기화중</span>
       </div>
     </div>
 
-    <button id="quickCreateBtn" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-bold shadow-sm transition-all">
+    <button id="quickCreateBtn" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white text-xs font-bold shadow-sm transition-all">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-      <span>새 인풋 기록하기</span>
+      <span>새 인풋 작성</span>
     </button>
   </div>
 </aside>
 
+<!-- 메인 뷰포트 -->
 <main class="flex-1 flex flex-col h-screen overflow-hidden">
-  <!-- 상단 검색바 & 유틸리티 헤더 -->
-  <header class="h-16 border-b border-slate-200 bg-white/90 backdrop-blur-sm px-8 flex items-center justify-between shrink-0">
-    <div class="flex items-center gap-3">
-      <h2 id="currentViewTitle" class="text-base font-bold text-slate-800">홈 대시보드</h2>
-      <span id="currentViewBadge" class="tape tape-slate hidden">0건</span>
+  <!-- 상단 모바일/데스크톱 헤더 -->
+  <header class="h-14 md:h-16 border-b border-slate-200 bg-white/95 backdrop-blur-sm px-4 md:px-8 flex items-center justify-between shrink-0 z-10">
+    <div class="flex items-center gap-2.5">
+      <!-- 모바일 햄버거 메뉴 버튼 -->
+      <button id="openSidebarBtn" class="md:hidden p-2 -ml-1 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <h2 id="currentViewTitle" class="text-sm md:text-base font-bold text-slate-800 truncate">홈 대시보드</h2>
+      <span id="currentViewBadge" class="tape tape-slate hidden text-[10px]">0건</span>
     </div>
 
-    <!-- 검색창 & 클라우드/데이터 설정 -->
-    <div class="flex items-center gap-3">
-      <div class="relative w-60">
-        <input id="searchInput" type="text" placeholder="기록 검색..." class="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
-        <svg class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <!-- 헤더 우측 메뉴 -->
+    <div class="flex items-center gap-1.5 md:gap-2">
+      <!-- 검색창 -->
+      <div class="relative w-32 sm:w-44 md:w-56">
+        <input id="searchInput" type="text" placeholder="검색..." class="w-full pl-7 md:pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-700">
+        <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2 md:left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
       </div>
-      <button id="templateManageBtn" class="flex items-center gap-1 px-3 py-1.5 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+
+      <button id="templateManageBtn" class="px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hidden sm:inline-flex">
         서식 틀
       </button>
-      <button id="cloudConfigBtn" class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
-        <span>☁️</span>
-        <span>클라우드 설정</span>
-      </button>
-      <button id="dataManageBtn" class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all">
+      <button id="dataManageBtn" class="px-2.5 py-1.5 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-1">
         <span>💾</span>
-        <span>백업/복원</span>
+        <span class="hidden sm:inline">백업</span>
       </button>
     </div>
   </header>
 
-  <!-- 메인 스크롤 콘텐츠 영역 -->
-  <div id="contentScrollArea" class="flex-1 overflow-y-auto p-8 max-w-6xl w-full mx-auto select-text"></div>
+  <!-- 메인 스크롤 영역 -->
+  <div id="contentScrollArea" class="flex-1 overflow-y-auto p-4 md:p-8 max-w-6xl w-full mx-auto select-text"></div>
 </main>
 
 <!-- 공통 노트 작성/조회 모달 -->
-<div id="modalContainer" class="fixed inset-0 bg-slate-900/35 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 hidden">
-  <div id="modalSheet" class="modal-sheet w-full bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-modal sheet-normal">
-    <!-- 모달 헤더: 너비 토글 및 저장/닫기 -->
-    <div class="h-14 px-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
+<div id="modalContainer" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-end md:items-center justify-center p-0 md:p-4 hidden">
+  <div id="modalSheet" class="modal-sheet w-full bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-modal h-[94vh] md:h-[88vh] max-w-3xl">
+    <!-- 모달 상단 헤더 -->
+    <div class="h-12 md:h-14 px-4 md:px-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/80">
       <div class="flex items-center gap-2">
-        <button id="modalCloseBtn" class="p-1.5 hover:bg-slate-200/60 rounded-lg text-slate-500 hover:text-slate-700 text-sm font-semibold transition-all">✕ 닫기</button>
-        <button id="toggleNotionWidthBtn" class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shadow-2xs">
-          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+        <button id="modalCloseBtn" class="px-2 py-1 text-slate-500 hover:text-slate-800 text-xs font-bold rounded-lg hover:bg-slate-200/50 transition-all">✕ 닫기</button>
+        <button id="toggleNotionWidthBtn" class="hidden md:flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">
           <span id="widthToggleLabel">페이지 넓게</span>
         </button>
       </div>
       <div class="flex items-center gap-2" id="modalHeaderRight"></div>
     </div>
-    <!-- 모달 바디 -->
-    <div id="modalBody" class="flex-1 overflow-y-auto p-6 md:p-8 select-text"></div>
+    <!-- 모달 본문 바디 -->
+    <div id="modalBody" class="flex-1 overflow-y-auto p-4 md:p-6 select-text"></div>
   </div>
 </div>
 
-<!-- 새 목차 추가 및 속성 설정 모달 UI -->
+<!-- 새 목차 추가 모달 -->
 <div id="categoryModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 animate-modal max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-      <div>
-        <h3 class="text-sm font-bold text-slate-800" id="catModalTitle">새 인풋 서랍 만들기</h3>
-        <p class="text-[11px] text-slate-400 mt-0.5">이 서랍에 필요한 입력 항목을 자유롭게 구성해보세요.</p>
-      </div>
+  <div class="bg-white rounded-2xl w-full max-w-md p-5 md:p-6 shadow-2xl border border-slate-200 animate-modal max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+      <h3 class="text-sm font-bold text-slate-800" id="catModalTitle">새 인풋 서랍 만들기</h3>
       <button id="closeCategoryModalBtn" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-3.5">
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">서랍 이름 *</label>
-        <input id="newCatNameInput" type="text" placeholder="예: 강의 메모, 팟캐스트, 부동산 임장" class="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+        <label class="block text-xs font-bold text-slate-600 mb-1">서랍 이름 *</label>
+        <input id="newCatNameInput" type="text" placeholder="예: 강의 메모, 팟캐스트, 부동산 임장" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">한 줄 설명</label>
-        <input id="newCatDescInput" type="text" placeholder="예: 온·오프라인 세미나 및 강의 핵심 기록" class="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-      </div>
-
-      <!-- 빠른 속성 프리셋 -->
-      <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">빠른 속성 프리셋</label>
+        <label class="block text-xs font-bold text-slate-600 mb-1">빠른 속성 프리셋</label>
         <div class="grid grid-cols-2 gap-1.5">
-          <button type="button" id="presetSimpleBtn" class="text-left p-2 border border-slate-200 hover:border-slate-400 rounded-xl text-[11px] text-slate-700 bg-slate-50 transition-all">
-            📄 <strong>단순 메모형</strong><br><span class="text-slate-400 text-[10px]">제목 + 날짜 (링크 없음)</span>
+          <button type="button" id="presetSimpleBtn" class="text-left p-2 border border-slate-200 rounded-xl text-[11px] text-slate-700 bg-slate-50">
+            📄 <strong>단순 메모</strong><br><span class="text-slate-400 text-[10px]">제목 + 날짜</span>
           </button>
-          <button type="button" id="presetLectureBtn" class="text-left p-2 border border-slate-200 hover:border-slate-400 rounded-xl text-[11px] text-slate-700 bg-slate-50 transition-all">
-            🎓 <strong>강의·세미나형</strong><br><span class="text-slate-400 text-[10px]">제목 + 강사/기관 + 날짜</span>
+          <button type="button" id="presetLectureBtn" class="text-left p-2 border border-slate-200 rounded-xl text-[11px] text-slate-700 bg-slate-50">
+            🎓 <strong>강의·세미나</strong><br><span class="text-slate-400 text-[10px]">강사/기관 포함</span>
           </button>
-          <button type="button" id="presetWebBtn" class="text-left p-2 border border-slate-200 hover:border-slate-400 rounded-xl text-[11px] text-slate-700 bg-slate-50 transition-all">
-            🔗 <strong>웹·미디어 링크형</strong><br><span class="text-slate-400 text-[10px]">제목 + URL 링크 + 날짜</span>
+          <button type="button" id="presetWebBtn" class="text-left p-2 border border-slate-200 rounded-xl text-[11px] text-slate-700 bg-slate-50">
+            🔗 <strong>웹 링크형</strong><br><span class="text-slate-400 text-[10px]">URL 링크 포함</span>
           </button>
-          <button type="button" id="presetReviewBtn" class="text-left p-2 border border-slate-200 hover:border-slate-400 rounded-xl text-[11px] text-slate-700 bg-slate-50 transition-all">
-            ⭐ <strong>리뷰·평가형</strong><br><span class="text-slate-400 text-[10px]">제목 + 저자/대상 + 별점</span>
+          <button type="button" id="presetReviewBtn" class="text-left p-2 border border-slate-200 rounded-xl text-[11px] text-slate-700 bg-slate-50">
+            ⭐ <strong>리뷰·평점형</strong><br><span class="text-slate-400 text-[10px]">별점 포함</span>
           </button>
         </div>
       </div>
 
-      <!-- 입력 필드 On / Off 설정 -->
-      <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2.5">
-        <label class="block text-xs font-bold text-slate-700 mb-1">입력 필드 직접 구성</label>
-        <div class="flex items-center justify-between text-xs text-slate-500">
-          <span>기본 제목 & 날짜</span>
-          <span class="text-[11px] font-bold text-slate-400">필수 포함</span>
-        </div>
-
-        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer pt-1 border-t border-slate-200">
+      <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/70 space-y-2 text-xs">
+        <label class="flex items-center justify-between text-slate-700 cursor-pointer">
           <span>🔗 참조 링크 (URL 입력칸)</span>
-          <input type="checkbox" id="fieldToggleUrl" class="w-4 h-4 rounded text-slate-900 accent-slate-900">
+          <input type="checkbox" id="fieldToggleUrl" class="w-4 h-4 rounded accent-slate-900">
         </label>
-
-        <div class="pt-1 border-t border-slate-200">
-          <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer">
-            <span>🏷️ 보조 항목 입력칸 (강사, 저자, 출처 등)</span>
-            <input type="checkbox" id="fieldToggleSub" class="w-4 h-4 rounded text-slate-900 accent-slate-900">
-          </label>
-          <div id="subFieldNameArea" class="mt-2 pl-2 hidden">
-            <input id="subFieldLabelInput" type="text" placeholder="항목 이름 (예: 강사명, 출처, 기관)" class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white">
-          </div>
+        <label class="flex items-center justify-between text-slate-700 cursor-pointer pt-1 border-t border-slate-200">
+          <span>🏷️ 보조 항목 (강사, 출처 등)</span>
+          <input type="checkbox" id="fieldToggleSub" class="w-4 h-4 rounded accent-slate-900">
+        </label>
+        <div id="subFieldNameArea" class="mt-1 hidden">
+          <input id="subFieldLabelInput" type="text" placeholder="항목 이름 (예: 강사명, 출처)" class="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white">
         </div>
-
-        <label class="flex items-center justify-between text-xs text-slate-700 cursor-pointer pt-1 border-t border-slate-200">
-          <span>⭐ 별점 / 한 줄 평가 입력칸</span>
-          <input type="checkbox" id="fieldToggleRating" class="w-4 h-4 rounded text-slate-900 accent-slate-900">
+        <label class="flex items-center justify-between text-slate-700 cursor-pointer pt-1 border-t border-slate-200">
+          <span>⭐ 별점 / 한 줄 평가</span>
+          <input type="checkbox" id="fieldToggleRating" class="w-4 h-4 rounded accent-slate-900">
         </label>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-2">파스텔 테이프 테마 색상</label>
-        <div class="grid grid-cols-4 gap-2" id="catColorPickerGroup"></div>
+        <label class="block text-xs font-bold text-slate-600 mb-1.5">테마 색상</label>
+        <div class="grid grid-cols-4 gap-1.5" id="catColorPickerGroup"></div>
       </div>
 
-      <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
-        <button id="cancelCategoryModalBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">취소</button>
-        <button id="submitNewCategoryBtn" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs">서랍 저장하기</button>
+      <div class="pt-2 border-t border-slate-100 flex justify-end gap-2">
+        <button id="cancelCategoryModalBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500">취소</button>
+        <button id="submitNewCategoryBtn" class="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold">저장하기</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 클라우드(Firebase) 연결 설정 모달 -->
-<div id="cloudModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-slate-200 animate-modal max-h-[92vh] overflow-y-auto">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-      <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-        <h3 class="text-sm font-bold text-slate-800">클라우드 실시간 자동 동기화 설정</h3>
-      </div>
-      <button id="closeCloudModalBtn" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
-    </div>
-
-    <div class="space-y-4 text-xs text-slate-600">
-      <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-emerald-900 leading-relaxed">
-        ✨ <strong>실시간 클라우드 연결 상태:</strong> 스마트폰과 PC에서 동일한 계정 ID로 접속하면 모든 글, 독서 목표, 서랍이 1초 만에 실시간 양방향 동기화됩니다.
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">현재 사용 중인 동기화 사용자 ID (전체)</label>
-        <div class="flex gap-2">
-          <input id="cloudUidInput" readonly type="text" class="w-full px-3 py-2 text-xs font-mono bg-slate-100 border border-slate-200 rounded-xl text-slate-700 select-all">
-          <button id="copyUidModalBtn" class="px-3 py-2 bg-slate-900 text-white rounded-xl font-bold whitespace-nowrap hover:bg-slate-800">복사</button>
-        </div>
-        <p class="text-[11px] text-slate-400 mt-1">스마트폰에서 접속할 때 이 ID를 입력하면 내 모든 서재가 동일하게 연동됩니다.</p>
-      </div>
-
-      <!-- 커스텀 계정 ID 전환 (기기 간 공유용) -->
-      <div class="pt-3 border-t border-slate-200">
-        <label class="block text-xs font-bold text-slate-700 mb-1">다른 기기의 데이터와 합치기 (기존 ID 입력)</label>
-        <div class="flex gap-2">
-          <input id="syncTargetUidInput" type="text" placeholder="스마트폰이나 다른 PC의 ID 붙여넣기" class="w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-xl">
-          <button id="switchUidBtn" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl whitespace-nowrap shadow-xs">연결 변경</button>
-        </div>
-      </div>
-
-      <!-- 사용자 정의 Firebase 환경 설정 (Vercel 배포 시 사용) -->
-      <div class="pt-3 border-t border-slate-200">
-        <label class="block text-xs font-bold text-slate-700 mb-1">나만의 Firebase Config JSON (선택 사항)</label>
-        <p class="text-[11px] text-slate-400 mb-2">Vercel에 직접 배포하여 본인의 Firebase 프로젝트를 연결할 때 입력하세요.</p>
-        <textarea id="customFirebaseConfigInput" rows="4" placeholder='{"apiKey": "AIzaSy...", "authDomain": "...firebaseapp.com", "projectId": "..."}' class="w-full p-2.5 text-[11px] font-mono border border-slate-200 rounded-xl"></textarea>
-        <div class="flex justify-end gap-2 mt-2">
-          <button id="saveCustomConfigBtn" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold">Firebase 설정 저장</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 데이터 백업 & 복원 모달 UI -->
+<!-- 백업 & 복원 모달 -->
 <div id="dataManageModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 animate-modal">
-    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-      <div>
-        <h3 class="text-sm font-bold text-slate-800">데이터 백업 및 복원 (가져오기)</h3>
-        <p class="text-[11px] text-slate-400 mt-0.5">내 모든 지식과 설정을 안전하게 파일로 보관하거나 복구합니다.</p>
-      </div>
+  <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl border border-slate-200 animate-modal">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+      <h3 class="text-sm font-bold text-slate-800">데이터 백업 및 복원</h3>
       <button id="closeDataModalBtn" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
     </div>
 
-    <div class="space-y-4">
-      <!-- 1. 백업 내보내기 -->
-      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col justify-between">
-        <div class="mb-3">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="tape tape-mint text-[10px]">안전 보관</span>
-            <span class="text-xs font-bold text-slate-800">내 데이터 백업 파일 다운로드</span>
-          </div>
-          <p class="text-[11px] text-slate-500 leading-relaxed">
-            클라우드와 별개로 지금까지 작성한 모든 노트와 서랍을 파일(<code class="text-slate-700 bg-slate-200/70 px-1 py-0.5 rounded text-[10px]">.json</code>)로 다운로드합니다.
-          </p>
-        </div>
-        <button id="exportJsonBtn" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5">
-          <span>📥</span>
-          <span>지금 백업 파일 다운로드 (.json)</span>
-        </button>
-      </div>
+    <div class="space-y-3">
+      <button id="exportJsonBtn" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+        <span>📥</span>
+        <span>백업 파일 다운로드 (.json)</span>
+      </button>
 
-      <!-- 2. 복원 불러오기 -->
-      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col justify-between">
-        <div class="mb-3">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="tape tape-blue text-[10px]">기기 이동 / 복구</span>
-            <span class="text-xs font-bold text-slate-800">백업 파일 불러오기 (데이터 복원)</span>
-          </div>
-          <p class="text-[11px] text-slate-500 leading-relaxed">
-            기존에 받아둔 `.json` 백업 파일을 불러오면 클라우드와 브라우저에 모두 안전하게 저장됩니다.
-          </p>
-        </div>
-        <input type="file" id="importJsonFileInput" accept=".json" class="hidden">
-        <button id="triggerImportBtn" class="w-full py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-1.5">
-          <span>📤</span>
-          <span>백업 파일 선택해서 불러오기</span>
-        </button>
-      </div>
+      <input type="file" id="importJsonFileInput" accept=".json" class="hidden">
+      <button id="triggerImportBtn" class="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+        <span>📤</span>
+        <span>백업 파일 불러오기 (복원)</span>
+      </button>
     </div>
   </div>
 </div>
 
 <!-- 알림 토스트 UI -->
-<div id="toastMessage" class="fixed bottom-6 right-6 px-4 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold shadow-lg transform transition-all duration-200 z-50 flex items-center gap-2 opacity-0 translate-y-12 pointer-events-none">
+<div id="toastMessage" class="fixed bottom-5 right-5 px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-xl transform transition-all duration-200 z-50 flex items-center gap-2 opacity-0 translate-y-10 pointer-events-none">
   <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
   <span id="toastText">알림 내용</span>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// 테마 색상 팔레트 정의
 const THEME_COLORS = [
   { id: 'mint', name: '민트', tapeClass: 'tape-mint', dotClass: 'bg-emerald-500' },
   { id: 'rose', name: '로즈', tapeClass: 'tape-rose', dotClass: 'bg-rose-400' },
@@ -478,7 +386,6 @@ const THEME_COLORS = [
   { id: 'slate', name: '슬레이트', tapeClass: 'tape-slate', dotClass: 'bg-slate-500' }
 ];
 
-// 기본 카테고리 정의
 const DEFAULT_CATEGORIES = [
   { 
     id: 'book', name: '독서 기록', tapeClass: 'tape-mint', dotClass: 'bg-emerald-500', group: 'input', fixed: false, desc: '완독 및 발췌 기록',
@@ -493,25 +400,18 @@ const DEFAULT_CATEGORIES = [
   { id: 'idea', name: '3층 · 아이디어', tapeClass: 'tape-purple', dotClass: 'bg-purple-500', group: 'core', fixed: true, desc: '가설 및 사후검증' }
 ];
 
-// 전역 앱 상태 (실시간 동기화 대상)
 let state = {
   categories: [...DEFAULT_CATEGORIES],
-  notes: {
-    book: [],
-    article: [],
-    concept: [],
-    log: [],
-    idea: []
-  },
+  notes: { book: [], article: [], concept: [], log: [], idea: [] },
   bookGoals: {},
   bookWishlist: [],
   templates: {}
 };
 
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-input-hub';
+const appId = 'my-input-hub';
 
-// 기본 내장된 사용자의 Firebase 환경 설정
-const DEFAULT_FIREBASE_CONFIG = {
+// 사용자 고유 파이어베이스 설정 (기존 발급키 연동)
+const firebaseConfig = {
   apiKey: "AIzaSyDFxRM1N9Yq7htE2aDb-u_BPXgrq1ezxkw",
   authDomain: "my-input-hub.firebaseapp.com",
   projectId: "my-input-hub",
@@ -520,28 +420,15 @@ const DEFAULT_FIREBASE_CONFIG = {
   appId: "1:1043746288006:web:353f3cf7f107922145bc07"
 };
 
-// Firebase 설정 파싱 (주입된 환경 또는 로컬 스토리지에 저장된 설정, 기본값 적용)
-let firebaseConfig = DEFAULT_FIREBASE_CONFIG;
-try {
-  if (typeof __firebase_config !== 'undefined') {
-    firebaseConfig = JSON.parse(__firebase_config);
-  } else {
-    const savedConfig = localStorage.getItem('hub_custom_firebase_config');
-    if (savedConfig) firebaseConfig = JSON.parse(savedConfig);
-  }
-} catch (e) {
-  console.warn('Firebase 설정 파싱 오류, 기본 설정 사용:', e);
-  firebaseConfig = DEFAULT_FIREBASE_CONFIG;
-}
-
 let app = null;
 let db = null;
 let auth = null;
-let currentUserId = null;
+let currentAuthUser = null;
 let unsubscribeFirestore = null;
-let isCloudSynced = false;
 
-// UI 상태
+// [예전 투두웹 방식] 동기화 비밀번호 (동기화 금고 키)
+let syncPassword = 'main-vault';
+
 let currentTab = 'home';
 let modalStack = [];
 let quillEditor = null;
@@ -549,15 +436,10 @@ let tempRelated = [];
 let isNotionFullWidth = false;
 
 let selectedColorId = 'mint';
-let editingCategoryId = null;
-
-let reportType = 'month';
 let reportPeriod = new Date().toISOString().slice(0, 7);
-
 let bookSubTab = 'completed';
 let currentSelectedBookYear = new Date().getFullYear().toString();
 
-// 유틸리티
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 function todayDate() { return new Date().toISOString().slice(0, 10); }
 function truncate(s, n) { return s && s.length > n ? s.slice(0, n) + '…' : (s || ''); }
@@ -570,96 +452,82 @@ function showToast(message) {
   const toast = document.getElementById('toastMessage');
   if (!toast) return;
   toast.querySelector('#toastText').textContent = message;
-  toast.classList.remove('opacity-0', 'translate-y-12', 'pointer-events-none');
+  toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
   setTimeout(() => {
-    toast.classList.add('opacity-0', 'translate-y-12', 'pointer-events-none');
+    toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
   }, 2200);
 }
 
-function updateCloudStatus(status, text) {
-  const badge = document.getElementById('cloudStatusBadge');
-  const dot = document.getElementById('cloudStatusDot');
-  const label = document.getElementById('cloudStatusText');
-  if (!badge || !dot || !label) return;
-
-  if (status === 'synced') {
-    dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
-    label.textContent = text || '실시간 동기화됨';
-    badge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-semibold text-emerald-700';
-  } else if (status === 'syncing') {
-    dot.className = 'w-1.5 h-1.5 rounded-full bg-blue-500 animate-spin';
-    label.textContent = text || '동기화 중...';
-    badge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 text-[10px] font-semibold text-blue-700';
-  } else {
-    dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
-    label.textContent = text || '로컬 보관중';
-    badge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 text-[10px] font-semibold text-amber-700';
-  }
+function openMobileSidebar() {
+  document.getElementById('mainSidebar')?.classList.remove('-translate-x-full');
+  document.getElementById('sidebarBackdrop')?.classList.remove('hidden');
+}
+function closeMobileSidebar() {
+  document.getElementById('mainSidebar')?.classList.add('-translate-x-full');
+  document.getElementById('sidebarBackdrop')?.classList.add('hidden');
 }
 
-async function initCloudSync() {
-  if (!firebaseConfig) {
-    updateCloudStatus('local', 'Firebase 미설정');
-    const localId = localStorage.getItem('hub_user_id') || ('user_' + uid());
-    localStorage.setItem('hub_user_id', localId);
-    currentUserId = localId;
-    renderUserIdDisplay();
-    loadFromLocalStorageFallback();
-    return;
-  }
+document.getElementById('openSidebarBtn')?.addEventListener('click', openMobileSidebar);
+document.getElementById('closeSidebarBtn')?.addEventListener('click', closeMobileSidebar);
+document.getElementById('sidebarBackdrop')?.addEventListener('click', closeMobileSidebar);
 
+async function initFirebase() {
   try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
 
-    // RULE 3: Auth Before Queries
-    const customToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-    if (customToken) {
-      await signInWithCustomToken(auth, customToken);
-    } else {
-      await signInAnonymously(auth);
-    }
+    // 저장되어 있던 비밀번호 불러오기 (없으면 기본값)
+    try {
+      const savedPw = localStorage.getItem('hub_sync_password');
+      if (savedPw) syncPassword = savedPw.trim();
+    } catch(e) {}
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        updateCloudStatus('local', '인증 대기');
-        return;
-      }
+    const pwInput = document.getElementById('syncPasswordInput');
+    const pwLabel = document.getElementById('currentSyncLabel');
+    if (pwInput) pwInput.value = syncPassword;
+    if (pwLabel) pwLabel.textContent = syncPassword;
 
-      // 커스텀 ID 전환이 저장되어 있다면 우선 적용, 아니면 auth uid 사용
-      const savedSharedUid = localStorage.getItem('hub_shared_uid');
-      currentUserId = savedSharedUid || user.uid;
-      renderUserIdDisplay();
-      startRealtimeListener();
-    });
+    // 조용한 백그라운드 인증 (구글 팝업 없이 1회 토큰 획득)
+    const userCred = await signInAnonymously(auth);
+    currentAuthUser = userCred.user;
+
+    // 비밀번호에 해당하는 서랍으로 즉시 실시간 연결
+    connectToPasswordVault(syncPassword);
 
   } catch (err) {
-    console.error('Firebase 초기화 실패, 로컬 모드로 전환:', err);
-    updateCloudStatus('local', '오프라인 모드');
-    loadFromLocalStorageFallback();
+    console.error('Firebase 초기화 오류:', err);
+    loadFromLocal();
   }
 }
 
-function renderUserIdDisplay() {
-  const el = document.getElementById('userUidDisplay');
-  const input = document.getElementById('cloudUidInput');
-  if (el) el.textContent = currentUserId || '미발급';
-  if (input) input.value = currentUserId || '';
-}
-
-// RULE 1: Strict Paths - /artifacts/{appId}/users/{userId}/{collectionName}
-// RULE 2: No Complex Queries - doc() 및 단순 collection()
-function startRealtimeListener() {
-  if (!db || !currentUserId) return;
+// 비밀번호(동기화 키)로 Firestore 서랍 연결
+function connectToPasswordVault(pw) {
+  if (!db || !currentAuthUser) return;
   if (unsubscribeFirestore) unsubscribeFirestore();
 
-  updateCloudStatus('syncing', '연결 확인중...');
+  const cleanPw = (pw || 'main-vault').trim().replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+  syncPassword = cleanPw;
 
-  // state 문서를 실시간 구독하여 모든 기기 간 1초 동기화
-  const stateDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'cloud_data', 'app_state');
+  try {
+    localStorage.setItem('hub_sync_password', cleanPw);
+  } catch(e) {}
 
-  unsubscribeFirestore = onSnapshot(stateDocRef, (snap) => {
+  const pwLabel = document.getElementById('currentSyncLabel');
+  if (pwLabel) pwLabel.textContent = cleanPw;
+
+  const dot = document.getElementById('syncStatusDot');
+  const txt = document.getElementById('syncStatusText');
+  if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+  if (txt) { txt.textContent = '서랍 찾는 중...'; txt.className = 'text-amber-600 font-semibold'; }
+
+  // Firestore 문서 참조 경로는 짝수 세그먼트 필수 (artifacts / appId / public / data / vaults / docId)
+  const vaultDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'vaults', 'vault_' + cleanPw);
+
+  unsubscribeFirestore = onSnapshot(vaultDocRef, (snap) => {
+    if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+    if (txt) { txt.textContent = '실시간 동기화중'; txt.className = 'text-emerald-600 font-semibold'; }
+
     if (snap.exists()) {
       const data = snap.data();
       if (data) {
@@ -671,44 +539,51 @@ function startRealtimeListener() {
 
         updateSidebar();
         renderCurrentView();
-        updateCloudStatus('synced', '실시간 동기화됨');
-        isCloudSynced = true;
       }
     } else {
-      // 클라우드에 아직 데이터가 없다면 현재 로컬 데이터를 클라우드에 최초 1회 업로드
+      // 새 비밀번호 서랍일 경우 현재 기본 상태 저장
       saveAppStateToCloud();
     }
   }, (err) => {
-    console.warn('Firestore 동기화 리스너 오류:', err);
-    updateCloudStatus('local', '연결 불안정');
+    console.warn('동기화 오류:', err);
+    if (dot) dot.className = 'w-2 h-2 rounded-full bg-rose-400';
+    if (txt) { txt.textContent = '오프라인'; txt.className = 'text-rose-500 font-semibold'; }
   });
 }
 
+// 비밀번호 변경 버튼 클릭 시
+document.getElementById('applySyncPasswordBtn')?.addEventListener('click', () => {
+  const input = document.getElementById('syncPasswordInput');
+  const newPw = input ? input.value.trim() : '';
+  if (!newPw) {
+    showToast('비밀번호를 입력해 주세요.');
+    return;
+  }
+  connectToPasswordVault(newPw);
+  showToast(`[${newPw}] 서랍으로 연결되었습니다!`);
+});
+
 async function saveAppStateToCloud() {
-  // 브라우저 백업도 항상 동시 유지
   try {
     localStorage.setItem('hub_cached_state', JSON.stringify(state));
   } catch (e) {}
 
-  if (!db || !currentUserId || !auth?.currentUser) {
-    return;
-  }
+  if (!db || !currentAuthUser) return;
 
   try {
-    updateCloudStatus('syncing', '저장중...');
-    const stateDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'cloud_data', 'app_state');
-    await setDoc(stateDocRef, {
+    const cleanPw = (syncPassword || 'main-vault').trim().replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+    const vaultDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'vaults', 'vault_' + cleanPw);
+
+    await setDoc(vaultDocRef, {
       ...state,
       lastUpdatedAt: new Date().toISOString()
     }, { merge: true });
-    updateCloudStatus('synced', '실시간 동기화됨');
   } catch (err) {
     console.error('클라우드 저장 실패:', err);
-    updateCloudStatus('local', '저장 오류');
   }
 }
 
-function loadFromLocalStorageFallback() {
+function loadFromLocal() {
   try {
     const cached = localStorage.getItem('hub_cached_state');
     if (cached) {
@@ -727,10 +602,10 @@ function loadFromLocalStorageFallback() {
 function getCategory(typeId) {
   return state.categories.find(c => c.id === typeId) || {
     id: typeId,
-    name: '기타 기록',
+    name: '기록',
     tapeClass: 'tape-slate',
     dotClass: 'bg-slate-400',
-    desc: '기록 아카이브',
+    desc: '아카이브',
     fixed: false,
     fields: { hasUrl: false, hasSub: false, subLabel: '', hasRating: false }
   };
@@ -748,7 +623,7 @@ function getNoteDisplayTitle(typeId, noteId) {
   if (typeId === 'article') return item.title || '(기사명 없음)';
   if (typeId === 'log') return (item.date || '') + ' 시황로그';
   if (typeId === 'idea') return item.question || '(질문 없음)';
-  return item.title || '(제목 없는 기록)';
+  return item.title || '(기록)';
 }
 
 function getAllFlatNotes() {
@@ -778,20 +653,16 @@ function updateSidebar() {
     return `
       <div class="group relative flex items-center">
         <button class="nav-btn w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl hover:bg-slate-50 transition-all ${isActive ? 'bg-slate-100 text-slate-900 font-bold' : 'text-slate-600'}" data-tab="${cat.id}">
-          <span class="flex items-center gap-2.5 truncate pr-6">
+          <span class="flex items-center gap-2 truncate pr-4">
             <span class="w-2 h-2 rounded-sm ${cat.dotClass}"></span>
             <span class="truncate">${escapeHtml(cat.name)}</span>
           </span>
-          <span class="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">${count}</span>
+          <span class="text-xs px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">${count}</span>
         </button>
         ${!cat.fixed ? `
           <div class="opacity-0 group-hover:opacity-100 absolute right-7 flex items-center gap-1 transition-all">
-            <button data-cat-edit="${cat.id}" title="서랍 속성 설정" class="p-1 hover:text-slate-900 text-slate-400 text-xs font-bold">
-              ⚙️
-            </button>
-            <button data-cat-del="${cat.id}" title="서랍 삭제" class="p-1 hover:text-rose-500 text-slate-400 text-xs font-bold">
-              ✕
-            </button>
+            <button data-cat-edit="${cat.id}" title="속성 설정" class="p-1 text-slate-400 hover:text-slate-900 text-xs">⚙️</button>
+            <button data-cat-del="${cat.id}" title="삭제" class="p-1 text-slate-400 hover:text-rose-500 text-xs">✕</button>
           </div>
         ` : ''}
       </div>
@@ -804,7 +675,10 @@ function updateSidebar() {
   });
 
   container.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+      closeMobileSidebar();
+    });
   });
 
   container.querySelectorAll('[data-cat-edit]').forEach(btn => {
@@ -831,44 +705,45 @@ function renderHomeDashboard(container) {
   const allNotes = getAllFlatNotes();
 
   container.innerHTML = `
-    <div class="mb-2">
-      <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">내 지식 수집 & 생각 서랍 현황</div>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-8">
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">인풋 서랍 현황</span>
+        <span class="text-[11px] text-slate-400">동기화: <strong class="text-slate-700 font-mono">${escapeHtml(syncPassword)}</strong></span>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 md:gap-3.5 mb-6">
         ${state.categories.map(cat => {
           const count = (state.notes[cat.id] || []).length;
           return `
-            <div class="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer flex flex-col justify-between" data-open-cat="${cat.id}">
+            <div class="bg-white border border-slate-200 p-3.5 rounded-2xl shadow-2xs hover:border-slate-300 cursor-pointer flex flex-col justify-between" data-open-cat="${cat.id}">
               <div>
-                <div class="mb-2">
-                  <span class="tape ${cat.tapeClass}">${escapeHtml(cat.name)}</span>
-                </div>
-                <div class="text-2xl font-extrabold text-slate-800 tracking-tight">${count}</div>
+                <span class="tape ${cat.tapeClass} text-[10px]">${escapeHtml(cat.name)}</span>
+                <div class="text-xl md:text-2xl font-black text-slate-800 tracking-tight mt-1.5">${count}</div>
               </div>
-              <div class="text-[11px] text-slate-400 mt-2 truncate">${escapeHtml(cat.desc || '지식 서랍')}</div>
+              <div class="text-[10px] text-slate-400 mt-2 truncate">${escapeHtml(cat.desc || '서랍')}</div>
             </div>
           `;
         }).join('')}
       </div>
     </div>
 
-    <!-- 검증 대기 가설 & 열린 질문 위젯 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-            <span class="tape tape-purple">검증 대기</span>
-            <span>진행 중인 아이디어 가설</span>
+    <!-- 검증 대기 & 열린 질문 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <span class="tape tape-purple text-[10px]">검증 대기</span>
+            <span>진행 중인 가설</span>
           </h3>
           <span class="text-xs font-bold text-slate-400">${pendingIdeas.length}건</span>
         </div>
-        <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+        <div class="space-y-2 max-h-52 overflow-y-auto">
           ${pendingIdeas.length === 0 ? '<div class="text-xs text-slate-400 py-6 text-center">검증 대기 중인 아이디어가 없습니다.</div>' :
-            pendingIdeas.slice(0, 5).map(idea => `
-              <div class="p-3 bg-slate-50 hover:bg-purple-50/40 rounded-xl border border-slate-100 cursor-pointer transition-all" data-open-note="idea:${idea.id}">
-                <div class="text-xs font-bold text-slate-800 mb-1">${escapeHtml(idea.question || '(질문 없음)')}</div>
-                <div class="flex items-center justify-between text-[11px] text-slate-400">
-                  <span>신뢰도: <span class="font-semibold text-slate-600">${idea.confidence || 50}%</span></span>
-                  <span>검증일: ${idea.reviewDate || '미정'}</span>
+            pendingIdeas.slice(0, 4).map(idea => `
+              <div class="p-2.5 bg-slate-50 hover:bg-purple-50/40 rounded-xl border border-slate-100 cursor-pointer" data-open-note="idea:${idea.id}">
+                <div class="text-xs font-bold text-slate-800 mb-0.5 truncate">${escapeHtml(idea.question || '(질문 없음)')}</div>
+                <div class="text-[10px] text-slate-400 flex justify-between">
+                  <span>신뢰도: ${idea.confidence || 50}%</span>
+                  <span>검증: ${idea.reviewDate || '미정'}</span>
                 </div>
               </div>
             `).join('')
@@ -876,20 +751,20 @@ function renderHomeDashboard(container) {
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-2">
-            <span class="tape tape-amber">탐색 질문</span>
-            <span>아직 풀리지 않은 열린 질문</span>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <span class="tape tape-amber text-[10px]">탐색 질문</span>
+            <span>풀리지 않은 질문</span>
           </h3>
           <span class="text-xs font-bold text-slate-400">${openQuestions.length}개</span>
         </div>
-        <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-          ${openQuestions.length === 0 ? '<div class="text-xs text-slate-400 py-6 text-center">등록된 질문이 없습니다. 노트를 쓸 때 질문을 남겨보세요.</div>' :
-            openQuestions.slice(0, 5).map(q => `
-              <div class="p-3 bg-slate-50 hover:bg-amber-50/40 rounded-xl border border-slate-100 cursor-pointer transition-all" data-open-note="${q.type}:${q.id}">
-                <div class="text-[11px] font-semibold text-slate-400 mb-1">${escapeHtml(q.from)}에서 남긴 질문</div>
-                <div class="text-xs font-bold text-slate-700">${escapeHtml(q.text)}</div>
+        <div class="space-y-2 max-h-52 overflow-y-auto">
+          ${openQuestions.length === 0 ? '<div class="text-xs text-slate-400 py-6 text-center">등록된 질문이 없습니다.</div>' :
+            openQuestions.slice(0, 4).map(q => `
+              <div class="p-2.5 bg-slate-50 hover:bg-amber-50/40 rounded-xl border border-slate-100 cursor-pointer" data-open-note="${q.type}:${q.id}">
+                <div class="text-[10px] text-slate-400 truncate mb-0.5">${escapeHtml(q.from)}</div>
+                <div class="text-xs font-bold text-slate-700 truncate">${escapeHtml(q.text)}</div>
               </div>
             `).join('')
           }
@@ -897,30 +772,28 @@ function renderHomeDashboard(container) {
       </div>
     </div>
 
-    <!-- 최근 등록 및 업데이트된 인풋 -->
+    <!-- 최근 등록 인풋 -->
     <div>
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">최근 업데이트된 인풋</h3>
-        <span class="text-xs text-slate-400 font-medium">총 ${allNotes.length}건 기록됨</span>
+        <span class="text-[11px] text-slate-400">총 ${allNotes.length}건</span>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         ${allNotes.slice(-6).reverse().map(note => {
           const cat = getCategory(note.type);
           return `
-            <div class="input-card bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs cursor-pointer flex flex-col justify-between" data-open-note="${note.type}:${note.id}" data-search="${escapeHtml(note.title)}">
+            <div class="input-card bg-white border border-slate-200 rounded-2xl p-4 cursor-pointer flex flex-col justify-between" data-open-note="${note.type}:${note.id}" data-search="${escapeHtml(note.title)}">
               <div>
-                <div class="mb-2">
-                  <span class="tape ${cat.tapeClass}">${escapeHtml(cat.name)}</span>
-                </div>
-                <div class="text-sm font-bold text-slate-800 leading-snug mb-2">${escapeHtml(note.title)}</div>
+                <span class="tape ${cat.tapeClass} text-[10px] mb-2">${escapeHtml(cat.name)}</span>
+                <div class="text-xs md:text-sm font-bold text-slate-800 leading-snug line-clamp-2 my-1.5">${escapeHtml(note.title)}</div>
               </div>
-              <div class="text-[11px] text-slate-400 pt-2 border-t border-slate-100 flex items-center justify-between">
-                <span>상세 보기</span>
+              <div class="text-[10px] text-slate-400 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span>열기 →</span>
                 <span>${note.date || ''}</span>
               </div>
             </div>
           `;
-        }).join('') || '<div class="col-span-3 text-center py-12 text-slate-400 text-xs">기록된 인풋이 없습니다. 새 인풋을 시작해보세요.</div>'}
+        }).join('') || '<div class="col-span-full text-center py-10 text-slate-400 text-xs">기록된 인풋이 없습니다.</div>'}
       </div>
     </div>
   `;
@@ -960,7 +833,7 @@ function renderCurrentView() {
     const cat = getCategory(currentTab);
     const count = (state.notes[currentTab] || []).length;
     viewTitle.textContent = cat.name;
-    badge.textContent = `${count}건 보관됨`;
+    badge.textContent = `${count}건`;
     badge.className = `tape ${cat.tapeClass}`;
     badge.classList.remove('hidden');
     renderCardListView(container, currentTab);
@@ -973,13 +846,11 @@ function renderCardListView(container, typeId) {
 
   if (items.length === 0) {
     container.innerHTML = `
-      <div class="bg-white border border-dashed border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto my-12">
-        <div class="mb-3">
-          <span class="tape ${cat.tapeClass}">${escapeHtml(cat.name)}</span>
-        </div>
+      <div class="bg-white border border-dashed border-slate-200 rounded-3xl p-8 md:p-12 text-center max-w-sm mx-auto my-10">
+        <span class="tape ${cat.tapeClass} mb-2">${escapeHtml(cat.name)}</span>
         <h4 class="text-sm font-bold text-slate-800 mb-1">기록이 비어 있습니다</h4>
-        <p class="text-xs text-slate-400 mb-6">첫 번째 ${escapeHtml(cat.name)} 노트를 작성해보세요.</p>
-        <button id="cardEmptyCreateBtn" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm">
+        <p class="text-xs text-slate-400 mb-5">첫 번째 노트를 작성해보세요.</p>
+        <button id="cardEmptyCreateBtn" class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl">
           ＋ 새 ${escapeHtml(cat.name)} 작성
         </button>
       </div>
@@ -989,19 +860,17 @@ function renderCardListView(container, typeId) {
   }
 
   container.innerHTML = `
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-4">
       <div class="flex items-center gap-2">
-        <p class="text-xs text-slate-400 font-medium">${escapeHtml(cat.desc || '')} (총 ${items.length}개)</p>
-        ${!cat.fixed ? `
-          <button id="openPropSettingBtn" class="text-[11px] text-slate-400 hover:text-slate-700 underline font-semibold ml-2">속성 설정 ⚙️</button>
-        ` : ''}
+        <p class="text-xs text-slate-400 font-medium">${escapeHtml(cat.desc || '')} (${items.length})</p>
+        ${!cat.fixed ? `<button id="openPropSettingBtn" class="text-[11px] text-slate-400 hover:text-slate-700 underline">속성 ⚙️</button>` : ''}
       </div>
-      <button id="cardTopCreateBtn" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5">
-        <span>＋</span> 새 기록
+      <button id="cardTopCreateBtn" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1">
+        <span>＋</span> 새 글
       </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
       ${items.map(item => {
         let title = item.title || '(제목 없음)';
         let subMeta = '';
@@ -1011,42 +880,38 @@ function renderCardListView(container, typeId) {
           subMeta = item.hub ? `허브: ${item.hub}` : '미분류';
         } else if (typeId === 'article') {
           subMeta = item.scrapDate || '날짜 미상';
-          if (item.url) extraBadge = `<span class="tape tape-slate text-[10px]">원문 링크</span>`;
+          if (item.url) extraBadge = `<span class="tape tape-slate text-[10px]">링크</span>`;
         } else if (typeId === 'log') {
           title = (item.date || '날짜 없음') + ' 시황로그';
-          subMeta = item.question ? `질문: ${truncate(item.question, 22)}` : '시장 관찰';
+          subMeta = item.question ? `질문: ${truncate(item.question, 18)}` : '시장 관찰';
         } else if (typeId === 'idea') {
           title = item.question || '(질문 없음)';
-          subMeta = `신뢰도 ${item.confidence || 50}% · ${item.reviewDate || '검증일 미정'}`;
-          const outcomeClass = item.outcome === '적중' ? 'tape-mint' : (item.outcome === '불일치' ? 'tape-rose' : 'tape-slate');
-          extraBadge = `<span class="tape ${outcomeClass} text-[10px]">${escapeHtml(item.outcome || '대기중')}</span>`;
+          subMeta = `신뢰도 ${item.confidence || 50}%`;
+          const oc = item.outcome === '적중' ? 'tape-mint' : (item.outcome === '불일치' ? 'tape-rose' : 'tape-slate');
+          extraBadge = `<span class="tape ${oc} text-[10px]">${escapeHtml(item.outcome || '대기중')}</span>`;
         } else {
           const parts = [];
           if (item.subVal) parts.push(item.subVal);
           parts.push(item.date || item.updatedAt || todayDate());
           subMeta = parts.join(' · ');
-
           if (item.rating) extraBadge = `<span class="tape tape-amber text-[10px]">⭐ ${escapeHtml(item.rating)}</span>`;
-          else if (item.url) extraBadge = `<span class="tape tape-slate text-[10px]">링크 포함</span>`;
         }
 
         const snippet = stripHtml(item.bodyHtml || '');
-        const relCount = (item.related || []).length;
 
         return `
-          <div class="input-card bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 cursor-pointer flex flex-col justify-between" data-open-item="${item.id}" data-search="${escapeHtml(title + ' ' + snippet + ' ' + subMeta)}">
+          <div class="input-card bg-white border border-slate-200 rounded-2xl p-4 cursor-pointer flex flex-col justify-between" data-open-item="${item.id}" data-search="${escapeHtml(title + ' ' + snippet + ' ' + subMeta)}">
             <div>
-              <div class="flex items-center justify-between gap-2 mb-2.5">
-                <span class="text-[11px] font-semibold text-slate-400">${escapeHtml(subMeta)}</span>
+              <div class="flex items-center justify-between gap-1.5 mb-2">
+                <span class="text-[10px] font-semibold text-slate-400 truncate">${escapeHtml(subMeta)}</span>
                 ${extraBadge}
               </div>
-              <h4 class="text-sm font-bold text-slate-800 leading-snug mb-2">${escapeHtml(title)}</h4>
-              <p class="text-xs text-slate-500 line-clamp-3 leading-relaxed mb-4">${escapeHtml(truncate(snippet, 90)) || '<span class="text-slate-300 italic">본문 내용이 없습니다.</span>'}</p>
+              <h4 class="text-xs md:text-sm font-bold text-slate-800 leading-snug line-clamp-2 mb-1.5">${escapeHtml(title)}</h4>
+              <p class="text-xs text-slate-500 line-clamp-3 leading-relaxed mb-3">${escapeHtml(truncate(snippet, 80)) || '<span class="text-slate-300 italic">본문 없음</span>'}</p>
             </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-              <span>${relCount > 0 ? `연관 노트 ${relCount}개` : '단독 노트'}</span>
-              <span class="text-slate-400 hover:text-slate-600 font-medium">열기 →</span>
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+              <span>상세보기</span>
+              <span class="font-bold">→</span>
             </div>
           </div>
         `;
@@ -1069,7 +934,7 @@ function viewHtml(typeId, noteId) {
   let specificDetails = '';
   if (typeId === 'book') {
     specificDetails = `
-      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-3 pb-2 border-b border-slate-100">
         <span>저자: <strong>${escapeHtml(item.author || '미기재')}</strong></span>
         <span>•</span>
         <span>완독일: ${escapeHtml(item.readDate || '미기재')}</span>
@@ -1078,38 +943,20 @@ function viewHtml(typeId, noteId) {
     `;
   } else if (typeId === 'article') {
     specificDetails = `
-      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
-        <span>스크랩 날짜: <strong>${escapeHtml(item.scrapDate || '미기재')}</strong></span>
-        ${item.url ? `<span>•</span><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="tape tape-blue text-[11px] hover:underline">원문 기사 열기 ↗</a>` : ''}
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-3 pb-2 border-b border-slate-100">
+        <span>스크랩: <strong>${escapeHtml(item.scrapDate || '미기재')}</strong></span>
+        ${item.url ? `<span>•</span><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="tape tape-blue text-[10px] hover:underline">원문 기사 ↗</a>` : ''}
       </div>
     `;
   } else if (typeId === 'idea') {
-    const outcomeClass = item.outcome === '적중' ? 'tape-mint' : (item.outcome === '불일치' ? 'tape-rose' : 'tape-slate');
+    const oc = item.outcome === '적중' ? 'tape-mint' : (item.outcome === '불일치' ? 'tape-rose' : 'tape-slate');
     specificDetails = `
-      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-3 pb-2 border-b border-slate-100">
         <span>신뢰도: <strong>${item.confidence || 50}%</strong></span>
         <span>•</span>
-        <span>검증 예정일: ${escapeHtml(item.reviewDate || '미정')}</span>
+        <span>검증일: ${escapeHtml(item.reviewDate || '미정')}</span>
         <span>•</span>
-        <span class="tape ${outcomeClass} text-[10px]">${escapeHtml(item.outcome || '대기중')}</span>
-      </div>
-    `;
-  } else if (typeId === 'concept' && item.hub) {
-    specificDetails = `
-      <div class="text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
-        <span>소속 허브: <strong>${escapeHtml(item.hub)}</strong></span>
-      </div>
-    `;
-  } else {
-    const metaItems = [];
-    if (item.subVal) metaItems.push(`<span>${escapeHtml(cat.fields?.subLabel || '구분')}: <strong>${escapeHtml(item.subVal)}</strong></span>`);
-    metaItems.push(`<span>날짜: <strong>${escapeHtml(item.date || item.updatedAt || todayDate())}</strong></span>`);
-    if (item.rating) metaItems.push(`<span class="tape tape-amber text-[10px]">평가: ${escapeHtml(item.rating)}</span>`);
-    if (item.url) metaItems.push(`<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="tape tape-slate text-[11px] hover:underline">참조 링크 열기 ↗</a>`);
-
-    specificDetails = `
-      <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
-        ${metaItems.join('<span>•</span>')}
+        <span class="tape ${oc} text-[10px]">${escapeHtml(item.outcome || '대기중')}</span>
       </div>
     `;
   }
@@ -1117,30 +964,30 @@ function viewHtml(typeId, noteId) {
   const relList = item.related || [];
 
   return `
-    <div class="space-y-4">
+    <div class="space-y-3">
       <div class="flex items-center gap-2">
         <span class="tape ${cat.tapeClass}">${escapeHtml(cat.name)}</span>
-        <span class="text-[11px] text-slate-400">최근 수정: ${item.updatedAt || todayDate()}</span>
+        <span class="text-[10px] text-slate-400">${item.updatedAt || todayDate()}</span>
       </div>
-      <h2 class="text-lg font-bold text-slate-900 leading-snug">${escapeHtml(title)}</h2>
+      <h2 class="text-base md:text-lg font-bold text-slate-900 leading-snug">${escapeHtml(title)}</h2>
       ${specificDetails}
-      <div class="ql-editor !p-0 !min-h-0 text-slate-700 leading-relaxed text-sm md:text-base">
+      <div class="ql-editor !p-0 !min-h-0 text-slate-700 leading-relaxed text-sm">
         ${item.bodyHtml || '<p class="text-slate-400 italic">본문 내용이 없습니다.</p>'}
       </div>
       ${item.question ? `
-        <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900">
-          <span class="tape tape-amber text-[10px] mr-1.5">열린 질문</span> ${escapeHtml(item.question)}
+        <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-900">
+          <span class="tape tape-amber text-[10px] mr-1">질문</span> ${escapeHtml(item.question)}
         </div>
       ` : ''}
-      <div class="pt-4 border-t border-slate-100">
-        <div class="text-xs font-bold text-slate-600 mb-2">연결된 연관 노트</div>
-        <div class="flex flex-wrap gap-2">
-          ${relList.length === 0 ? '<span class="text-xs text-slate-400 italic">연결된 연관 노트가 없습니다.</span>' :
+      <div class="pt-3 border-t border-slate-100">
+        <div class="text-[11px] font-bold text-slate-500 mb-1.5">연결된 연관 노트</div>
+        <div class="flex flex-wrap gap-1.5">
+          ${relList.length === 0 ? '<span class="text-xs text-slate-400 italic">연결된 노트 없음</span>' :
             relList.map(r => {
               const [rt, rid] = r.split(':');
               const c = getCategory(rt);
               return `
-                <button data-jump-note="${rt}:${rid}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+                <button data-jump-note="${rt}:${rid}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-slate-100 hover:bg-slate-200 text-slate-700">
                   <span class="w-1.5 h-1.5 rounded-full ${c.dotClass}"></span>
                   <span>${escapeHtml(getNoteDisplayTitle(rt, rid))}</span>
                 </button>
@@ -1159,87 +1006,86 @@ function renderEditHtml(typeId, noteId) {
   const cat = getCategory(typeId);
 
   tempRelated = [...(data.related || [])];
-
   let specificFields = '';
 
   if (typeId === 'concept') {
     specificFields = `
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">개념 키워드 (제목)</label>
-          <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="예: 양적긴축(QT), 실질금리" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">개념 키워드</label>
+          <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="예: 양적긴축(QT)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">소속 허브</label>
-          <input id="field_hub" value="${escapeHtml(data.hub || '')}" placeholder="예: 금리·채권, 거시경제" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">소속 허브</label>
+          <input id="field_hub" value="${escapeHtml(data.hub || '')}" placeholder="예: 거시경제, 채권" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       </div>
     `;
   } else if (typeId === 'book') {
     specificFields = `
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">도서명</label>
-          <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="책 제목을 입력하세요" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">도서명</label>
+          <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="책 제목" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">저자 / 역자</label>
-          <input id="field_author" value="${escapeHtml(data.author || '')}" placeholder="예: 레이 달리오" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">저자</label>
+          <input id="field_author" value="${escapeHtml(data.author || '')}" placeholder="저자명" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">한 줄 총평 / 별점</label>
-          <input id="field_rating" value="${escapeHtml(data.rating || '')}" placeholder="예: 4.5/5, 통찰을 주는 명작" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">평점 / 총평</label>
+          <input id="field_rating" value="${escapeHtml(data.rating || '')}" placeholder="예: 5/5, 통찰을 주는 명작" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">완독 날짜</label>
-          <input type="date" id="field_readDate" value="${escapeHtml(data.readDate || todayDate())}" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">완독 날짜</label>
+          <input type="date" id="field_readDate" value="${escapeHtml(data.readDate || todayDate())}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       </div>
     `;
   } else if (typeId === 'article') {
     specificFields = `
       <div class="mb-3">
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">기사 제목</label>
-        <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="스크랩할 기사 헤드라인을 입력하세요" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+        <label class="block text-xs font-bold text-slate-600 mb-1">기사 제목</label>
+        <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="기사 제목" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">원문 기사 링크 (URL)</label>
-          <input id="field_url" value="${escapeHtml(data.url || '')}" placeholder="https://..." class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1">원문 링크 (URL)</label>
+          <input id="field_url" value="${escapeHtml(data.url || '')}" placeholder="https://..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">스크랩 날짜</label>
-          <input type="date" id="field_scrapDate" value="${escapeHtml(data.scrapDate || todayDate())}" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">스크랩 날짜</label>
+          <input type="date" id="field_scrapDate" value="${escapeHtml(data.scrapDate || todayDate())}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       </div>
     `;
   } else if (typeId === 'log') {
     specificFields = `
-      <div class="mb-4">
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">시황 관찰 날짜</label>
-        <input type="date" id="field_date" value="${escapeHtml(data.date || todayDate())}" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+      <div class="mb-3">
+        <label class="block text-xs font-bold text-slate-600 mb-1">시황 관찰 날짜</label>
+        <input type="date" id="field_date" value="${escapeHtml(data.date || todayDate())}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
       </div>
     `;
   } else if (typeId === 'idea') {
     specificFields = `
       <div class="mb-3">
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">가설 및 문제의식 (질문형 제목)</label>
-        <input id="field_question" value="${escapeHtml(data.question || '')}" placeholder="예: 고금리 지속에도 원화 강세가 나타날 수 있는가?" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+        <label class="block text-xs font-bold text-slate-600 mb-1">가설 및 문제의식 (질문)</label>
+        <input id="field_question" value="${escapeHtml(data.question || '')}" placeholder="예: 고금리 지속에도 원화 강세가 나타날 수 있는가?" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">예측 신뢰도: <span id="confVal">${data.confidence || 50}%</span></label>
-          <input type="range" id="field_confidence" min="0" max="100" value="${data.confidence || 50}" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-purple-600">
+          <label class="block text-xs font-bold text-slate-600 mb-1">신뢰도: <span id="confVal">${data.confidence || 50}%</span></label>
+          <input type="range" id="field_confidence" min="0" max="100" value="${data.confidence || 50}" class="w-full h-2 accent-purple-600">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">검증 예정일</label>
-          <input type="date" id="field_reviewDate" value="${escapeHtml(data.reviewDate || '')}" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">검증 예정일</label>
+          <input type="date" id="field_reviewDate" value="${escapeHtml(data.reviewDate || '')}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">검증 결과 상태</label>
-          <select id="field_outcome" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 bg-white">
+          <label class="block text-xs font-bold text-slate-600 mb-1">결과 상태</label>
+          <select id="field_outcome" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl bg-white">
             <option value="대기중" ${(data.outcome || '대기중') === '대기중' ? 'selected' : ''}>대기중</option>
             <option value="적중" ${data.outcome === '적중' ? 'selected' : ''}>적중</option>
             <option value="불일치" ${data.outcome === '불일치' ? 'selected' : ''}>불일치</option>
@@ -1249,91 +1095,76 @@ function renderEditHtml(typeId, noteId) {
     `;
   } else {
     const fConfig = cat.fields || { hasUrl: false, hasSub: false, subLabel: '', hasRating: false };
-
-    let titleHtml = `
-      <div class="mb-3">
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">기록 제목</label>
-        <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="기록할 항목의 제목을 입력하세요" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-      </div>
-    `;
-
-    let dynamicRowItems = [];
+    let dynamicItems = [];
 
     if (fConfig.hasSub) {
-      dynamicRowItems.push(`
+      dynamicItems.push(`
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">${escapeHtml(fConfig.subLabel || '보조 항목')}</label>
-          <input id="field_subVal" value="${escapeHtml(data.subVal || '')}" placeholder="${escapeHtml(fConfig.subLabel || '')} 입력" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">${escapeHtml(fConfig.subLabel || '보조')}</label>
+          <input id="field_subVal" value="${escapeHtml(data.subVal || '')}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       `);
     }
-
     if (fConfig.hasRating) {
-      dynamicRowItems.push(`
+      dynamicItems.push(`
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">한 줄 평가 / 별점</label>
-          <input id="field_rating" value="${escapeHtml(data.rating || '')}" placeholder="예: 5/5, 통찰을 주는 강의" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+          <label class="block text-xs font-bold text-slate-600 mb-1">별점/평가</label>
+          <input id="field_rating" value="${escapeHtml(data.rating || '')}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       `);
     }
-
     if (fConfig.hasUrl) {
-      dynamicRowItems.push(`
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-slate-600 mb-1.5">참조 링크 (URL 선택사항)</label>
-          <input id="field_url" value="${escapeHtml(data.url || '')}" placeholder="https://..." class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+      dynamicItems.push(`
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-bold text-slate-600 mb-1">참조 링크</label>
+          <input id="field_url" value="${escapeHtml(data.url || '')}" placeholder="https://..." class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
         </div>
       `);
     }
-
-    dynamicRowItems.push(`
+    dynamicItems.push(`
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">기록 날짜</label>
-        <input type="date" id="field_date" value="${escapeHtml(data.date || todayDate())}" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
+        <label class="block text-xs font-bold text-slate-600 mb-1">날짜</label>
+        <input type="date" id="field_date" value="${escapeHtml(data.date || todayDate())}" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
       </div>
     `);
 
     specificFields = `
-      ${titleHtml}
-      <div class="grid grid-cols-1 md:grid-cols-${Math.min(3, Math.max(2, dynamicRowItems.length))} gap-4 mb-4">
-        ${dynamicRowItems.join('')}
+      <div class="mb-3">
+        <label class="block text-xs font-bold text-slate-600 mb-1">기록 제목</label>
+        <input id="field_title" value="${escapeHtml(data.title || '')}" placeholder="제목 입력" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        ${dynamicItems.join('')}
       </div>
     `;
   }
 
-  const questionField = typeId !== 'idea' ? `
-    <div class="mb-5">
-      <label class="block text-xs font-bold text-slate-600 mb-1.5">남겨둘 열린 질문 (이후 탐색 과제)</label>
-      <input id="field_question" value="${escapeHtml(data.question || '')}" placeholder="더 조사하거나 고민해볼 질문을 남겨보세요" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-    </div>
-  ` : '';
-
   return `
-    <div class="space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <span class="tape ${cat.tapeClass}">${escapeHtml(cat.name)}</span>
-          <h3 class="text-sm font-bold text-slate-800">${isNew ? '새 노트 작성' : '편집'}</h3>
-        </div>
-        <button id="applyTemplateFastBtn" class="text-xs text-slate-600 hover:text-slate-900 font-semibold underline">서식 틀 불러오기</button>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <span class="tape ${cat.tapeClass}">${escapeHtml(cat.name)}</span>
+        <button id="applyTemplateFastBtn" class="text-xs text-slate-500 hover:text-slate-800 underline">서식 틀 불러오기</button>
       </div>
 
       ${specificFields}
 
       <div>
-        <label class="block text-xs font-bold text-slate-600 mb-1.5">본문 내용</label>
+        <label class="block text-xs font-bold text-slate-600 mb-1">본문 기록</label>
         <div id="quillEditorRoot"></div>
       </div>
 
-      ${questionField}
+      ${typeId !== 'idea' ? `
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">열린 질문 (선택)</label>
+          <input id="field_question" value="${escapeHtml(data.question || '')}" placeholder="더 고민해볼 질문" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl">
+        </div>
+      ` : ''}
 
-      <!-- 지식 연결 -->
-      <div class="pt-4 border-t border-slate-200">
+      <div class="pt-3 border-t border-slate-200">
         <label class="block text-xs font-bold text-slate-700 mb-1">연관 노트 연결</label>
-        <p class="text-[11px] text-slate-400 mb-2">이 인풋과 맞물리는 다른 노트를 연결해보세요.</p>
-        <div id="selectedChipsContainer" class="flex flex-wrap gap-2 mb-3"></div>
-        <input id="relationSearchInput" type="text" placeholder="연결할 다른 노트 검색..." class="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-        <div id="relationSearchResults" class="mt-1 border border-slate-100 rounded-xl overflow-hidden shadow-2xs divide-y divide-slate-100 max-h-36 overflow-y-auto hidden"></div>
+        <div id="selectedChipsContainer" class="flex flex-wrap gap-1.5 mb-2"></div>
+        <input id="relationSearchInput" type="text" placeholder="노트 검색 후 연결..." class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-xl">
+        <div id="relationSearchResults" class="mt-1 border border-slate-100 rounded-xl overflow-hidden divide-y divide-slate-100 max-h-32 overflow-y-auto hidden"></div>
       </div>
     </div>
   `;
@@ -1351,12 +1182,11 @@ function bindEditEvents(top) {
 
   quillEditor = new Quill('#quillEditorRoot', {
     theme: 'snow',
-    placeholder: '핵심 내용과 인사이트를 기록하세요...',
+    placeholder: '인사이트와 요약을 기록하세요...',
     modules: {
       toolbar: [
-        [{ header: [1, 2, 3, false] }],
+        [{ header: [2, 3, false] }],
         ['bold', 'italic', 'underline', 'blockquote'],
-        [{ color: [] }, { background: [] }],
         [{ list: 'ordered' }, { list: 'bullet' }],
         ['link', 'clean']
       ]
@@ -1370,12 +1200,7 @@ function bindEditEvents(top) {
   }
 
   document.getElementById('applyTemplateFastBtn')?.addEventListener('click', () => {
-    openTemplateManagerDialog(type, (chosenHtml) => {
-      if (quillEditor) {
-        quillEditor.root.innerHTML = chosenHtml;
-        showToast('선택한 서식 틀이 적용되었습니다.');
-      }
-    });
+    openTemplateChooser(type);
   });
 
   renderSelectedChips();
@@ -1389,30 +1214,22 @@ function bindEditEvents(top) {
       relResults.classList.add('hidden');
       return;
     }
-
     const matches = getAllFlatNotes()
       .filter(n => !(n.type === type && n.id === id))
       .filter(n => n.title.toLowerCase().includes(q))
       .filter(n => !tempRelated.includes(`${n.type}:${n.id}`))
-      .slice(0, 6);
+      .slice(0, 5);
 
     if (matches.length === 0) {
-      relResults.innerHTML = '<div class="p-2.5 text-xs text-slate-400 text-center">검색 결과가 없습니다.</div>';
+      relResults.innerHTML = '<div class="p-2 text-xs text-slate-400 text-center">검색 결과 없음</div>';
     } else {
-      relResults.innerHTML = matches.map(m => {
-        const c = getCategory(m.type);
-        return `
-          <div class="p-2.5 hover:bg-slate-50 flex items-center justify-between cursor-pointer transition-all" data-add-rel="${m.type}:${m.id}">
-            <div class="flex items-center gap-2">
-              <span class="w-1.5 h-1.5 rounded-full ${c.dotClass}"></span>
-              <span class="text-xs font-semibold text-slate-700">${escapeHtml(m.title)}</span>
-            </div>
-            <span class="tape ${c.tapeClass} text-[10px]">${escapeHtml(c.name)}</span>
-          </div>
-        `;
-      }).join('');
+      relResults.innerHTML = matches.map(m => `
+        <div class="p-2 hover:bg-slate-50 flex items-center justify-between cursor-pointer" data-add-rel="${m.type}:${m.id}">
+          <span class="text-xs font-semibold text-slate-700 truncate pr-2">${escapeHtml(m.title)}</span>
+          <span class="tape ${getCategory(m.type).tapeClass} text-[10px]">${escapeHtml(getCategory(m.type).name)}</span>
+        </div>
+      `).join('');
     }
-
     relResults.classList.remove('hidden');
 
     relResults.querySelectorAll('[data-add-rel]').forEach(btn => {
@@ -1429,26 +1246,26 @@ function bindEditEvents(top) {
     let item = isNew ? { id: uid() } : findNoteItem(type, id);
 
     if (type === 'concept') {
-      item.title = document.getElementById('field_title').value.trim() || '이름 없는 개념';
+      item.title = document.getElementById('field_title').value.trim() || '개념';
       item.hub = document.getElementById('field_hub').value.trim();
     } else if (type === 'book') {
-      item.title = document.getElementById('field_title').value.trim() || '이름 없는 도서';
+      item.title = document.getElementById('field_title').value.trim() || '도서';
       item.author = document.getElementById('field_author').value.trim();
       item.rating = document.getElementById('field_rating').value.trim();
       item.readDate = document.getElementById('field_readDate').value;
     } else if (type === 'article') {
-      item.title = document.getElementById('field_title').value.trim() || '제목 없는 기사';
+      item.title = document.getElementById('field_title').value.trim() || '기사';
       item.scrapDate = document.getElementById('field_scrapDate').value;
       item.url = document.getElementById('field_url').value.trim();
     } else if (type === 'log') {
       item.date = document.getElementById('field_date').value || todayDate();
     } else if (type === 'idea') {
-      item.question = document.getElementById('field_question').value.trim() || '새 아이디어 질문';
+      item.question = document.getElementById('field_question').value.trim() || '가설';
       item.confidence = parseInt(document.getElementById('field_confidence').value, 10);
       item.reviewDate = document.getElementById('field_reviewDate').value;
       item.outcome = document.getElementById('field_outcome').value;
     } else {
-      item.title = document.getElementById('field_title').value.trim() || '제목 없는 기록';
+      item.title = document.getElementById('field_title').value.trim() || '기록';
       item.date = document.getElementById('field_date')?.value || todayDate();
       item.url = document.getElementById('field_url')?.value.trim() || '';
       item.subVal = document.getElementById('field_subVal')?.value.trim() || '';
@@ -1470,18 +1287,11 @@ function bindEditEvents(top) {
     }
 
     await saveAppStateToCloud();
-    showToast('클라우드에 안전하게 저장되었습니다.');
+    showToast('저장 완료!');
 
     top.id = item.id;
     top.mode = 'view';
     renderModalUI();
-  });
-
-  document.getElementById('modalDeleteBtn')?.addEventListener('click', async () => {
-    state.notes[type] = (state.notes[type] || []).filter(item => item.id !== id);
-    await saveAppStateToCloud();
-    showToast('기록이 삭제되었습니다.');
-    closeModal();
   });
 }
 
@@ -1490,18 +1300,16 @@ function renderSelectedChips() {
   if (!container) return;
 
   if (tempRelated.length === 0) {
-    container.innerHTML = '<span class="text-xs text-slate-400 italic">연결된 연관 노트가 없습니다.</span>';
+    container.innerHTML = '<span class="text-xs text-slate-400 italic">연결된 노트 없음</span>';
     return;
   }
 
   container.innerHTML = tempRelated.map(rel => {
     const [t, i] = rel.split(':');
-    const c = getCategory(t);
     return `
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
-        <span class="w-1.5 h-1.5 rounded-full ${c.dotClass}"></span>
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 text-slate-700">
         <span>${escapeHtml(getNoteDisplayTitle(t, i))}</span>
-        <button type="button" data-del-rel="${rel}" class="hover:text-rose-500 font-bold ml-1">✕</button>
+        <button type="button" data-del-rel="${rel}" class="font-bold hover:text-rose-500 ml-1">✕</button>
       </span>
     `;
   }).join('');
@@ -1512,398 +1320,6 @@ function renderSelectedChips() {
       renderSelectedChips();
     });
   });
-}
-
-function renderBookHubView(container) {
-  const books = state.notes.book || [];
-  const wishlists = state.bookWishlist || [];
-  const yearGoal = state.bookGoals?.[currentSelectedBookYear] || 12;
-
-  const completedInYear = books.filter(b => (b.readDate || '').startsWith(currentSelectedBookYear));
-  const rate = Math.min(100, Math.round((completedInYear.length / Math.max(1, yearGoal)) * 100));
-
-  container.innerHTML = `
-    <div class="bg-white border border-slate-200/90 rounded-2xl p-6 mb-6 shadow-2xs">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-        <div>
-          <div class="flex items-center gap-2 mb-1.5">
-            <span class="tape tape-mint">목표 독서 관리</span>
-            <div class="flex items-center gap-1 text-xs">
-              <button id="bookYearPrevBtn" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center">‹</button>
-              <span class="font-bold text-slate-800 px-1">${currentSelectedBookYear}년</span>
-              <button id="bookYearNextBtn" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center">›</button>
-            </div>
-          </div>
-          <h3 class="text-base font-bold text-slate-800">
-            ${currentSelectedBookYear}년 독서 현황: <span class="tape-highlight-mint font-extrabold text-slate-900">${completedInYear.length}권</span> / ${yearGoal}권 (${rate}%)
-          </h3>
-          <p class="text-xs text-slate-400 mt-1">목표를 향해 꾸준히 지식을 쌓아가세요.</p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button id="bookSetGoalBtn" class="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-all">
-            목표 권수 설정
-          </button>
-          <button id="bookAddWishBtn" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs">
-            ＋ 읽을 책 추가
-          </button>
-        </div>
-      </div>
-
-      <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5">
-        <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: ${rate}%;"></div>
-      </div>
-    </div>
-
-    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-6">
-      <div class="flex items-center gap-2">
-        <button id="bookTabCompBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${bookSubTab === 'completed' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'}">
-          완독 서재 (${books.length})
-        </button>
-        <button id="bookTabWishBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${bookSubTab === 'wishlist' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'}">
-          읽을 예정 위시리스트 (${wishlists.length})
-        </button>
-      </div>
-
-      <button id="bookTabActionBtn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">
-        ${bookSubTab === 'completed' ? '＋ 독서 노트 작성' : '＋ 도서 등록'}
-      </button>
-    </div>
-
-    ${bookSubTab === 'completed' ? renderCompletedBooksGrid(books) : renderWishlistGrid(wishlists)}
-  `;
-
-  container.querySelector('#bookYearPrevBtn').onclick = () => { currentSelectedBookYear = (parseInt(currentSelectedBookYear, 10) - 1).toString(); renderCurrentView(); };
-  container.querySelector('#bookYearNextBtn').onclick = () => { currentSelectedBookYear = (parseInt(currentSelectedBookYear, 10) + 1).toString(); renderCurrentView(); };
-  container.querySelector('#bookSetGoalBtn').onclick = setYearlyGoalPrompt;
-  container.querySelector('#bookAddWishBtn').onclick = openAddWishlistModal;
-  container.querySelector('#bookTabCompBtn').onclick = () => { bookSubTab = 'completed'; renderCurrentView(); };
-  container.querySelector('#bookTabWishBtn').onclick = () => { bookSubTab = 'wishlist'; renderCurrentView(); };
-  container.querySelector('#bookTabActionBtn').onclick = () => {
-    if (bookSubTab === 'completed') openModal('book', null);
-    else openAddWishlistModal();
-  };
-
-  container.querySelectorAll('[data-open-book]').forEach(el => {
-    el.onclick = () => openModal('book', el.dataset.openBook);
-  });
-  container.querySelectorAll('[data-del-wish]').forEach(el => {
-    el.onclick = () => deleteWishlistItem(el.dataset.delWish);
-  });
-  container.querySelectorAll('[data-convert-wish]').forEach(el => {
-    el.onclick = () => convertWishlistToNote(el.dataset.convertWish);
-  });
-}
-
-function renderCompletedBooksGrid(books) {
-  if (books.length === 0) {
-    return `
-      <div class="bg-white border border-dashed border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto my-8">
-        <div class="mb-3">
-          <span class="tape tape-mint text-xs">완독 서재</span>
-        </div>
-        <h4 class="text-sm font-bold text-slate-800 mb-1">완독한 도서 기록이 없습니다</h4>
-        <p class="text-xs text-slate-400 mb-6">읽은 책의 인상 깊은 문장과 생각을 기록해보세요.</p>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      ${books.map(book => {
-        const snippet = stripHtml(book.bodyHtml || '');
-        const relCount = (book.related || []).length;
-        return `
-          <div class="input-card bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-5 cursor-pointer flex flex-col justify-between" data-open-book="${book.id}">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="tape tape-mint text-[10px]">${book.readDate ? book.readDate.slice(0, 4) + '년 완독' : '완독'}</span>
-                ${book.rating ? `<span class="tape tape-amber text-[10px]">평점: ${escapeHtml(book.rating)}</span>` : ''}
-              </div>
-              <h4 class="text-sm font-bold text-slate-800 leading-snug mb-1">${escapeHtml(book.title || '(도서명 없음)')}</h4>
-              <div class="text-xs text-slate-400 font-medium mb-3">${escapeHtml(book.author ? book.author + ' 저' : '저자 미기재')}</div>
-              <p class="text-xs text-slate-500 line-clamp-3 leading-relaxed mb-4">${escapeHtml(truncate(snippet, 90)) || '<span class="text-slate-300 italic">작성된 독서 메모가 없습니다.</span>'}</p>
-            </div>
-
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-              <span>${book.readDate || ''}</span>
-              <span class="text-slate-500 font-semibold">${relCount > 0 ? `연결 ${relCount}개` : '상세보기 →'}</span>
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-
-function renderWishlistGrid(wishlists) {
-  if (wishlists.length === 0) {
-    return `
-      <div class="bg-white border border-dashed border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto my-8">
-        <div class="mb-3"><span class="tape tape-mint text-xs">위시리스트</span></div>
-        <h4 class="text-sm font-bold text-slate-800 mb-1">읽을 예정인 책이 없습니다</h4>
-        <p class="text-xs text-slate-400 mb-6">읽고 싶은 책을 미리 등록해두고 목표를 관리해보세요.</p>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      ${wishlists.map(item => `
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between hover:border-slate-300 transition-all">
-          <div>
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="tape tape-mint text-[10px]">${item.targetYear || currentSelectedBookYear}년 목표</span>
-              <button data-del-wish="${item.id}" class="text-slate-400 hover:text-rose-500 text-xs font-bold">✕</button>
-            </div>
-            <h4 class="text-sm font-bold text-slate-800 leading-snug mb-1">${escapeHtml(item.title)}</h4>
-            <div class="text-xs text-slate-400 mb-3">${escapeHtml(item.author || '저자 미상')}</div>
-            ${item.reason ? `<p class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 line-clamp-2 mb-3">${escapeHtml(item.reason)}</p>` : ''}
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span class="text-[11px] text-slate-400">${item.addedDate || ''}</span>
-            <button data-convert-wish="${item.id}" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-all">
-              완독 후 기록 쓰기 ✍
-            </button>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function setYearlyGoalPrompt() {
-  const current = state.bookGoals?.[currentSelectedBookYear] || 12;
-  const overlay = document.createElement('div');
-  overlay.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal';
-  overlay.innerHTML = `
-    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-200">
-      <h3 class="text-sm font-bold text-slate-800 mb-1">${currentSelectedBookYear}년 독서 목표 권수</h3>
-      <p class="text-xs text-slate-400 mb-4">올해 완독하고자 하는 목표 권수를 숫자로 설정하세요.</p>
-      <input id="inAppGoalInput" type="number" min="1" max="999" value="${current}" class="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl mb-4 focus:outline-none focus:border-slate-400 font-bold text-slate-800">
-      <div class="flex justify-end gap-2">
-        <button id="cancelGoalBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">취소</button>
-        <button id="saveGoalBtn" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs">저장하기</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#cancelGoalBtn').onclick = () => overlay.remove();
-  overlay.querySelector('#saveGoalBtn').onclick = async () => {
-    const val = parseInt(overlay.querySelector('#inAppGoalInput').value, 10);
-    if (!isNaN(val) && val >= 0) {
-      if (!state.bookGoals) state.bookGoals = {};
-      state.bookGoals[currentSelectedBookYear] = val;
-      await saveAppStateToCloud();
-      showToast(`${currentSelectedBookYear}년 목표가 ${val}권으로 변경되었습니다.`);
-      renderCurrentView();
-    }
-    overlay.remove();
-  };
-}
-
-function openAddWishlistModal() {
-  const overlay = document.createElement('div');
-  overlay.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal';
-  overlay.innerHTML = `
-    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200">
-      <h3 class="text-sm font-bold text-slate-800 mb-3">읽을 책 등록 (위시리스트)</h3>
-      <div class="space-y-3 mb-5">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">도서명 *</label>
-          <input id="wishBookTitle" type="text" placeholder="읽고 싶은 책 제목" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">저자</label>
-          <input id="wishBookAuthor" type="text" placeholder="저자명 (선택)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">읽고자 하는 이유 / 기대하는 점</label>
-          <input id="wishBookReason" type="text" placeholder="예: 거시경제 사이클 이해를 위한 필독서" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400">
-        </div>
-      </div>
-      <div class="flex justify-end gap-2">
-        <button id="cancelWishBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">취소</button>
-        <button id="submitWishBtn" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs">등록하기</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#cancelWishBtn').onclick = () => overlay.remove();
-  overlay.querySelector('#submitWishBtn').onclick = async () => {
-    const title = overlay.querySelector('#wishBookTitle').value.trim();
-    if (!title) {
-      showToast('도서명을 입력해주세요.');
-      return;
-    }
-    const newWish = {
-      id: uid(),
-      title,
-      author: overlay.querySelector('#wishBookAuthor').value.trim(),
-      reason: overlay.querySelector('#wishBookReason').value.trim(),
-      targetYear: currentSelectedBookYear,
-      addedDate: todayDate()
-    };
-    if (!state.bookWishlist) state.bookWishlist = [];
-    state.bookWishlist.push(newWish);
-    await saveAppStateToCloud();
-    showToast('읽을 책 위시리스트에 추가되었습니다.');
-    overlay.remove();
-    renderCurrentView();
-  };
-}
-
-async function deleteWishlistItem(id) {
-  state.bookWishlist = (state.bookWishlist || []).filter(item => item.id !== id);
-  await saveAppStateToCloud();
-  showToast('위시리스트에서 삭제되었습니다.');
-  renderCurrentView();
-}
-
-function convertWishlistToNote(wishId) {
-  const item = (state.bookWishlist || []).find(w => w.id === wishId);
-  if (!item) return;
-
-  openModal('book', null);
-  setTimeout(() => {
-    const titleEl = document.getElementById('field_title');
-    const authorEl = document.getElementById('field_author');
-    if (titleEl) titleEl.value = item.title || '';
-    if (authorEl) authorEl.value = item.author || '';
-    if (item.reason && quillEditor) {
-      quillEditor.root.innerHTML = `<p><strong>읽게 된 계기:</strong> ${escapeHtml(item.reason)}</p><p><br></p><p><strong>핵심 발췌 및 통찰:</strong></p><p>-</p>`;
-    }
-  }, 100);
-}
-
-function shiftPeriod(delta) {
-  if (reportType === 'month') {
-    const [y, m] = reportPeriod.split('-').map(Number);
-    const d = new Date(y, m - 1 + delta, 1);
-    reportPeriod = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  } else {
-    reportPeriod = String(Number(reportPeriod) + delta);
-  }
-  renderCurrentView();
-}
-
-function formatPeriodLabel() {
-  if (reportType === 'month') {
-    const [y, m] = reportPeriod.split('-');
-    return `${y}년 ${Number(m)}월`;
-  }
-  return `${reportPeriod}년 전체`;
-}
-
-function renderReportDashboard(container) {
-  if (!reportPeriod) {
-    reportPeriod = reportType === 'month' ? todayDate().slice(0, 7) : todayDate().slice(0, 4);
-  }
-
-  const inPeriod = (dateStr) => {
-    if (!dateStr) return false;
-    return dateStr.startsWith(reportPeriod);
-  };
-
-  const categoryCounts = [];
-  let totalPeriodInputs = 0;
-
-  state.categories.forEach(cat => {
-    const items = state.notes[cat.id] || [];
-    const count = items.filter(n => inPeriod(n.date || n.readDate || n.scrapDate || n.updatedAt)).length;
-    categoryCounts.push({ cat, count });
-    totalPeriodInputs += count;
-  });
-
-  const verifiedInPeriod = (state.notes.idea || []).filter(i => (i.outcome || '대기중') !== '대기중' && inPeriod(i.reviewDate || i.updatedAt));
-  const hits = verifiedInPeriod.filter(i => i.outcome === '적중').length;
-  const accuracy = verifiedInPeriod.length > 0 ? Math.round((hits / verifiedInPeriod.length) * 100) : null;
-
-  const targetYear = reportType === 'month' ? reportPeriod.split('-')[0] : reportPeriod;
-  const yearGoal = state.bookGoals?.[targetYear] || 12;
-  const completedInTargetYear = (state.notes.book || []).filter(b => (b.readDate || '').startsWith(targetYear)).length;
-  const yearGoalRate = Math.min(100, Math.round((completedInTargetYear / Math.max(1, yearGoal)) * 100));
-
-  container.innerHTML = `
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-        <button id="repTypeMonth" class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${reportType === 'month' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-500 hover:text-slate-700'}">
-          월간 리포트
-        </button>
-        <button id="repTypeYear" class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${reportType === 'year' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-500 hover:text-slate-700'}">
-          연간 리포트
-        </button>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <button id="repPrevBtn" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold transition-all">‹</button>
-        <span class="text-sm font-extrabold text-slate-800 min-w-[110px] text-center">${formatPeriodLabel()}</span>
-        <button id="repNextBtn" class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold transition-all">›</button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-2xs">
-        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">${formatPeriodLabel()} 총 인풋</div>
-        <div class="text-3xl font-extrabold text-slate-800">${totalPeriodInputs} <span class="text-sm font-medium text-slate-400">건</span></div>
-        <p class="text-xs text-slate-500 mt-2">선택한 기간 동안 등록/수정된 모든 기록</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-2xs">
-        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">가설 적중률 (${verifiedInPeriod.length}건 검증)</div>
-        <div class="text-3xl font-extrabold ${accuracy !== null && accuracy >= 50 ? 'text-emerald-600' : 'text-rose-500'}">
-          ${accuracy !== null ? accuracy + '%' : '<span class="text-slate-300 text-2xl font-bold">검증 없음</span>'}
-        </div>
-        <p class="text-xs text-slate-500 mt-2">${hits}건 적중 / ${verifiedInPeriod.length - hits}건 불일치</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-2xs">
-        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">${targetYear}년 독서 목표 달성률</div>
-        <div class="text-3xl font-extrabold text-emerald-600">${yearGoalRate}%</div>
-        <p class="text-xs text-slate-500 mt-2">목표 ${yearGoal}권 중 ${completedInTargetYear}권 완독</p>
-      </div>
-    </div>
-
-    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-2xs mb-8">
-      <div class="flex items-center justify-between mb-4">
-        <h4 class="text-sm font-bold text-slate-800">${formatPeriodLabel()} 인풋 카테고리별 분포</h4>
-        <span class="text-xs text-slate-400">총합: ${totalPeriodInputs}건</span>
-      </div>
-      <div class="space-y-4">
-        ${categoryCounts.map(({ cat, count }) => {
-          const pct = totalPeriodInputs > 0 ? Math.round((count / totalPeriodInputs) * 100) : 0;
-          return `
-            <div>
-              <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
-                <span class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-sm ${cat.dotClass}"></span>
-                  <span>${escapeHtml(cat.name)}</span>
-                </span>
-                <span>${count}건 (${pct}%)</span>
-              </div>
-              <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full rounded-full ${cat.dotClass}" style="width: ${pct}%"></div>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
-
-  container.querySelector('#repTypeMonth')?.addEventListener('click', () => {
-    reportType = 'month';
-    reportPeriod = todayDate().slice(0, 7);
-    renderCurrentView();
-  });
-  container.querySelector('#repTypeYear')?.addEventListener('click', () => {
-    reportType = 'year';
-    reportPeriod = todayDate().slice(0, 4);
-    renderCurrentView();
-  });
-  container.querySelector('#repPrevBtn')?.addEventListener('click', () => shiftPeriod(-1));
-  container.querySelector('#repNextBtn')?.addEventListener('click', () => shiftPeriod(1));
 }
 
 function openModal(type, id, initialTemplateHtml = '') {
@@ -1936,18 +1352,16 @@ function renderModalUI() {
   const sheet = document.getElementById('modalSheet');
   const widthLabel = document.getElementById('widthToggleLabel');
   if (sheet) {
-    sheet.className = `modal-sheet w-full bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-modal ${isNotionFullWidth ? 'sheet-full' : 'sheet-normal'}`;
+    sheet.className = `modal-sheet w-full bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-modal ${isNotionFullWidth ? 'sheet-full' : 'sheet-normal'}`;
   }
-  if (widthLabel) {
-    widthLabel.textContent = isNotionFullWidth ? '표준 폭으로' : '페이지 넓게';
-  }
+  if (widthLabel) widthLabel.textContent = isNotionFullWidth ? '표준 폭' : '넓게';
 
   const headerRight = document.getElementById('modalHeaderRight');
   if (headerRight) {
     if (top.mode === 'view') {
       headerRight.innerHTML = `
-        <button id="modalDeleteBtn" class="px-3 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl transition-all">삭제</button>
-        <button id="modalEditBtn" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-sm">편집</button>
+        <button id="modalDeleteBtn" class="px-2.5 py-1 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-lg">삭제</button>
+        <button id="modalEditBtn" class="px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded-lg shadow-xs">편집</button>
       `;
       document.getElementById('modalEditBtn')?.addEventListener('click', () => {
         top.mode = 'edit';
@@ -1956,13 +1370,12 @@ function renderModalUI() {
       document.getElementById('modalDeleteBtn')?.addEventListener('click', async () => {
         state.notes[top.type] = (state.notes[top.type] || []).filter(item => item.id !== top.id);
         await saveAppStateToCloud();
-        showToast('기록이 삭제되었습니다.');
+        showToast('삭제되었습니다.');
         closeModal();
       });
     } else {
       headerRight.innerHTML = `
-        ${top.id ? '<button id="modalDeleteBtn" class="px-3 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-xl transition-all">삭제</button>' : ''}
-        <button id="modalSaveBtn" class="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm">저장</button>
+        <button id="modalSaveBtn" class="px-3.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs">저장</button>
       `;
     }
   }
@@ -1982,479 +1395,6 @@ function renderModalUI() {
   }
 }
 
-function applyFieldPreset(presetType) {
-  const urlToggle = document.getElementById('fieldToggleUrl');
-  const subToggle = document.getElementById('fieldToggleSub');
-  const subLabelInput = document.getElementById('subFieldLabelInput');
-  const subArea = document.getElementById('subFieldNameArea');
-  const ratingToggle = document.getElementById('fieldToggleRating');
-
-  if (presetType === 'simple') {
-    urlToggle.checked = false;
-    subToggle.checked = false;
-    ratingToggle.checked = false;
-    subArea.classList.add('hidden');
-  } else if (presetType === 'lecture') {
-    urlToggle.checked = false;
-    subToggle.checked = true;
-    subLabelInput.value = '강사명 / 주최기관';
-    ratingToggle.checked = false;
-    subArea.classList.remove('hidden');
-  } else if (presetType === 'web') {
-    urlToggle.checked = true;
-    subToggle.checked = false;
-    ratingToggle.checked = false;
-    subArea.classList.add('hidden');
-  } else if (presetType === 'review') {
-    urlToggle.checked = false;
-    subToggle.checked = true;
-    subLabelInput.value = '저자 / 대상';
-    ratingToggle.checked = true;
-    subArea.classList.remove('hidden');
-  }
-  showToast('프리셋이 적용되었습니다.');
-}
-
-function openNewCategoryModal() {
-  editingCategoryId = null;
-  document.getElementById('catModalTitle').textContent = '새 인풋 서랍 만들기';
-  document.getElementById('newCatNameInput').value = '';
-  document.getElementById('newCatDescInput').value = '';
-
-  applyFieldPreset('simple');
-  selectedColorId = 'mint';
-  renderColorPickers();
-
-  document.getElementById('categoryModal')?.classList.remove('hidden');
-  document.getElementById('newCatNameInput')?.focus();
-}
-
-function openEditCategoryModal(catId) {
-  const cat = getCategory(catId);
-  if (!cat || cat.fixed) return;
-
-  editingCategoryId = catId;
-  document.getElementById('catModalTitle').textContent = `'${cat.name}' 서랍 속성 설정`;
-  document.getElementById('newCatNameInput').value = cat.name;
-  document.getElementById('newCatDescInput').value = cat.desc || '';
-
-  const f = cat.fields || { hasUrl: false, hasSub: false, subLabel: '', hasRating: false };
-  document.getElementById('fieldToggleUrl').checked = !!f.hasUrl;
-  document.getElementById('fieldToggleSub').checked = !!f.hasSub;
-  document.getElementById('subFieldLabelInput').value = f.subLabel || '';
-  if (f.hasSub) {
-    document.getElementById('subFieldNameArea').classList.remove('hidden');
-  } else {
-    document.getElementById('subFieldNameArea').classList.add('hidden');
-  }
-  document.getElementById('fieldToggleRating').checked = !!f.hasRating;
-
-  selectedColorId = THEME_COLORS.find(c => c.tapeClass === cat.tapeClass)?.id || 'mint';
-  renderColorPickers();
-
-  document.getElementById('categoryModal')?.classList.remove('hidden');
-}
-
-function renderColorPickers() {
-  const colorGroup = document.getElementById('catColorPickerGroup');
-  if (!colorGroup) return;
-
-  colorGroup.innerHTML = THEME_COLORS.map(col => `
-    <button type="button" class="color-select-btn p-2 rounded-xl border text-center transition-all ${col.id === selectedColorId ? 'border-slate-800 bg-slate-50 font-bold' : 'border-slate-200 hover:border-slate-300'}" data-color="${col.id}">
-      <span class="w-3 h-3 rounded-full ${col.dotClass} mx-auto block mb-1"></span>
-      <span class="text-[11px] text-slate-600 block">${col.name}</span>
-    </button>
-  `).join('');
-
-  colorGroup.querySelectorAll('.color-select-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedColorId = btn.dataset.color;
-      renderColorPickers();
-    });
-  });
-}
-
-function closeNewCategoryModal() {
-  document.getElementById('categoryModal')?.classList.add('hidden');
-  editingCategoryId = null;
-}
-
-async function handleCreateNewCategory() {
-  const name = document.getElementById('newCatNameInput').value.trim();
-  const desc = document.getElementById('newCatDescInput').value.trim();
-
-  if (!name) {
-    showToast('서랍 이름을 입력해 주세요.');
-    return;
-  }
-
-  const colConfig = THEME_COLORS.find(c => c.id === selectedColorId) || THEME_COLORS[0];
-  const hasUrl = document.getElementById('fieldToggleUrl').checked;
-  const hasSub = document.getElementById('fieldToggleSub').checked;
-  const subLabel = document.getElementById('subFieldLabelInput').value.trim();
-  const hasRating = document.getElementById('fieldToggleRating').checked;
-
-  const fieldsConfig = {
-    hasUrl,
-    hasSub,
-    subLabel: hasSub ? (subLabel || '보조 항목') : '',
-    hasRating
-  };
-
-  if (editingCategoryId) {
-    const cat = getCategory(editingCategoryId);
-    cat.name = name;
-    cat.desc = desc;
-    cat.tapeClass = colConfig.tapeClass;
-    cat.dotClass = colConfig.dotClass;
-    cat.fields = fieldsConfig;
-    showToast(`'${name}' 서랍 속성이 수정되었습니다.`);
-  } else {
-    const newId = 'cat_' + uid();
-    const newCategory = {
-      id: newId,
-      name: name,
-      tapeClass: colConfig.tapeClass,
-      dotClass: colConfig.dotClass,
-      group: 'input',
-      fixed: false,
-      desc: desc || `${name} 기록 서랍`,
-      fields: fieldsConfig
-    };
-    state.categories.push(newCategory);
-    if (!state.notes[newId]) state.notes[newId] = [];
-    showToast(`'${name}' 서랍이 추가되었습니다.`);
-    currentTab = newId;
-  }
-
-  await saveAppStateToCloud();
-  closeNewCategoryModal();
-  updateSidebar();
-  renderCurrentView();
-}
-
-async function promptDeleteCategory(catId) {
-  const cat = getCategory(catId);
-  if (cat.fixed) {
-    showToast('기본 사고 엔진(개념, 시황로그, 아이디어)은 삭제할 수 없습니다.');
-    return;
-  }
-
-  const notesCount = (state.notes[catId] || []).length;
-  const overlay = document.createElement('div');
-  overlay.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal';
-
-  if (notesCount === 0) {
-    overlay.innerHTML = `
-      <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-200 text-center">
-        <h3 class="text-sm font-bold text-slate-800 mb-2">'${escapeHtml(cat.name)}' 서랍을 삭제할까요?</h3>
-        <p class="text-xs text-slate-400 mb-5">보관된 노트가 없어 바로 삭제됩니다.</p>
-        <div class="flex justify-center gap-2">
-          <button id="delCancelBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">취소</button>
-          <button id="delConfirmBtn" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs">삭제</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    overlay.querySelector('#delCancelBtn').onclick = () => overlay.remove();
-    overlay.querySelector('#delConfirmBtn').onclick = async () => {
-      overlay.remove();
-      await executeDeleteCategory(catId);
-      showToast(`'${cat.name}' 서랍이 삭제되었습니다.`);
-    };
-    return;
-  }
-
-  overlay.innerHTML = `
-    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200">
-      <div class="flex items-center gap-2 text-rose-600 mb-2">
-        <span class="tape tape-rose">안전 확인</span>
-        <h3 class="text-sm font-bold text-slate-900">'${escapeHtml(cat.name)}'에 노트가 ${notesCount}건 있습니다</h3>
-      </div>
-      <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-        이 서랍을 삭제하기 전에 보관된 노트들을 어떻게 처리할지 선택해 주세요.
-      </p>
-      <div class="space-y-2 mb-5">
-        <button id="migrateAndDelBtn" class="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition-all">
-          <div class="text-xs font-bold text-slate-800">노트를 '기사 스크랩' 보관함으로 옮기고 서랍 삭제</div>
-          <div class="text-[11px] text-slate-400">기록은 안전하게 유지되며 목차 서랍만 사라집니다. (권장)</div>
-        </button>
-        <button id="delAllBtn" class="w-full text-left p-3 rounded-xl border border-rose-200 hover:bg-rose-50 transition-all text-rose-700">
-          <div class="text-xs font-bold">서랍과 노트 ${notesCount}건 모두 영구 삭제</div>
-          <div class="text-[11px] text-rose-400">삭제된 글은 복구할 수 없습니다.</div>
-        </button>
-      </div>
-      <div class="flex justify-end">
-        <button id="delCancelBtn2" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">취소</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#delCancelBtn2').onclick = () => overlay.remove();
-  overlay.querySelector('#migrateAndDelBtn').onclick = async () => {
-    overlay.remove();
-    const movedNotes = state.notes[catId] || [];
-    if (!state.notes.article) state.notes.article = [];
-    state.notes.article.push(...movedNotes);
-    await executeDeleteCategory(catId);
-    showToast(`노트 ${notesCount}건을 보관함으로 이동하고 서랍을 삭제했습니다.`);
-  };
-  overlay.querySelector('#delAllBtn').onclick = async () => {
-    overlay.remove();
-    await executeDeleteCategory(catId);
-    showToast(`서랍과 노트 ${notesCount}건이 모두 삭제되었습니다.`);
-  };
-}
-
-async function executeDeleteCategory(catId) {
-  state.categories = state.categories.filter(c => c.id !== catId);
-  delete state.notes[catId];
-  await saveAppStateToCloud();
-  updateSidebar();
-  if (currentTab === catId) switchTab('home');
-  else renderCurrentView();
-}
-
-function openTemplateManagerDialog(initialTargetCategory, onSelectCallback = null) {
-  let curType = initialTargetCategory || (state.categories.some(c => c.id === currentTab) ? currentTab : 'concept');
-  let isEditing = false;
-  let editingTemplateId = null;
-  let tplQuill = null;
-
-  const PRESETS = [
-    {
-      name: '핵심 요약 & 통찰형',
-      html: '<p><strong>[1. 핵심 요약]</strong></p><ul><li>중심 내용 1</li><li>중심 내용 2</li></ul><p><br></p><p><strong>[2. 통찰 &amp; 내 생각]</strong></p><p>-</p><p><br></p><p><strong>[3. 앞으로의 적용점]</strong></p><p>-</p>'
-    },
-    {
-      name: 'Q&A 질문 & 가설형',
-      html: '<p><strong>[핵심 질문]</strong></p><p>무엇을 검증하거나 탐구하고자 하는가?</p><p><br></p><p><strong>[사전 가설]</strong></p><p>-</p><p><br></p><p><strong>[검증 데이터 &amp; 관찰 기록]</strong></p><p>-</p>'
-    },
-    {
-      name: '독서 / 자료 발췌형',
-      html: '<p><strong>[인상 깊은 문장 &amp; 핵심 인용]</strong></p><blockquote>"기억하고 싶은 명문장이나 데이터 발췌"</blockquote><p><br></p><p><strong>[저자의 논리와 근거]</strong></p><p>-</p><p><br></p><p><strong>[나의 반론 또는 확장]</strong></p><p>-</p>'
-    }
-  ];
-
-  const overlay = document.createElement('div');
-  overlay.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal';
-
-  function renderDialog() {
-    const cat = getCategory(curType);
-    const templates = state.templates[curType] || [];
-
-    if (!isEditing) {
-      overlay.innerHTML = `
-        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-slate-200 flex flex-col max-h-[88vh]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div>
-              <h3 class="text-sm font-bold text-slate-800">기본 서식(템플릿) 설정</h3>
-              <p class="text-[11px] text-slate-400 mt-0.5">글을 작성할 때 불러올 템플릿 구조를 관리합니다.</p>
-            </div>
-            <button id="closeTplDialogBtn" class="text-slate-400 hover:text-slate-600 text-sm font-bold p-1">✕</button>
-          </div>
-
-          <div class="py-3 flex-1 overflow-y-auto">
-            <label class="block text-xs font-bold text-slate-600 mb-2">목차 서랍 선택</label>
-            <div class="flex flex-wrap gap-1.5 mb-4">
-              ${state.categories.map(c => `
-                <button class="tpl-cat-btn py-1 px-2.5 text-xs font-semibold rounded-lg border text-center transition-all ${c.id === curType ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}" data-ttype="${c.id}">
-                  ${escapeHtml(c.name)}
-                </button>
-              `).join('')}
-            </div>
-
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-bold text-slate-700">${escapeHtml(cat.name)} 서식 목록 (${templates.length})</span>
-            </div>
-
-            <div class="space-y-2 mb-4">
-              ${templates.length === 0 ? `
-                <div class="text-xs text-slate-400 text-center py-8 border border-dashed border-slate-200 rounded-xl">
-                  등록된 템플릿 서식이 없습니다.<br>아래 버튼을 눌러 첫 번째 맞춤 서식을 만들어보세요.
-                </div>
-              ` : templates.map(t => `
-                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-slate-50 flex items-center justify-between gap-3 transition-all">
-                  <div class="flex-1 min-w-0">
-                    <div class="text-xs font-bold text-slate-800 truncate">${escapeHtml(t.name)}</div>
-                    <div class="text-[11px] text-slate-400 truncate mt-0.5">${truncate(stripHtml(t.bodyHtml), 45) || '(내용 없음)'}</div>
-                  </div>
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    ${onSelectCallback ? `
-                      <button data-apply-tpl="${t.id}" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg shadow-2xs">
-                        이 서식 적용
-                      </button>
-                    ` : ''}
-                    <button data-edit-tpl="${t.id}" class="px-2 py-1 text-slate-600 hover:bg-slate-200 text-[11px] font-semibold rounded-lg">
-                      수정
-                    </button>
-                    <button data-del-tpl="${t.id}" class="px-2 py-1 text-rose-500 hover:bg-rose-50 text-[11px] font-semibold rounded-lg">
-                      삭제
-                    </button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
-            <button id="addNewTplBtn" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5">
-              <span>＋</span>
-              <span>새 템플릿 서식 만들기</span>
-            </button>
-          </div>
-        </div>
-      `;
-
-      overlay.querySelectorAll('.tpl-cat-btn').forEach(b => {
-        b.onclick = () => { curType = b.dataset.ttype; renderDialog(); };
-      });
-
-      overlay.querySelector('#addNewTplBtn').onclick = () => {
-        isEditing = true;
-        editingTemplateId = null;
-        renderDialog();
-      };
-
-      overlay.querySelectorAll('[data-edit-tpl]').forEach(b => {
-        b.onclick = () => {
-          isEditing = true;
-          editingTemplateId = b.dataset.editTpl;
-          renderDialog();
-        };
-      });
-
-      overlay.querySelectorAll('[data-del-tpl]').forEach(b => {
-        b.onclick = async () => {
-          state.templates[curType] = (state.templates[curType] || []).filter(t => t.id !== b.dataset.delTpl);
-          await saveAppStateToCloud();
-          showToast('템플릿 서식이 삭제되었습니다.');
-          renderDialog();
-        };
-      });
-
-      overlay.querySelectorAll('[data-apply-tpl]').forEach(b => {
-        b.onclick = () => {
-          const t = (state.templates[curType] || []).find(x => x.id === b.dataset.applyTpl);
-          if (t && onSelectCallback) {
-            onSelectCallback(t.bodyHtml);
-            overlay.remove();
-          }
-        };
-      });
-
-      overlay.querySelector('#closeTplDialogBtn').onclick = () => overlay.remove();
-
-    } else {
-      const existing = editingTemplateId ? (state.templates[curType] || []).find(t => t.id === editingTemplateId) : null;
-
-      overlay.innerHTML = `
-        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-slate-200 flex flex-col max-h-[92vh]">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-            <h3 class="text-sm font-bold text-slate-800">
-              ${existing ? '템플릿 서식 수정' : '새 템플릿 서식 만들기'} (${escapeHtml(cat.name)})
-            </h3>
-            <button id="cancelTplEditBtn" class="text-slate-400 hover:text-slate-600 text-sm font-bold p-1">✕</button>
-          </div>
-
-          <div class="flex-1 overflow-y-auto space-y-3.5 pr-1">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1.5">서식 이름 *</label>
-              <input id="customTplNameInput" type="text" value="${escapeHtml(existing?.name || '')}" placeholder="예: 3단 통찰 서식, 핵심 발췌 양식" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 font-semibold">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1.5">추천 프리셋 불러오기</label>
-              <div class="grid grid-cols-3 gap-1.5">
-                ${PRESETS.map((p, idx) => `
-                  <button type="button" class="preset-load-btn text-left p-2 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 text-xs font-medium text-slate-700 transition-all truncate" data-pidx="${idx}">
-                    ⚡ ${escapeHtml(p.name)}
-                  </button>
-                `).join('')}
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1.5">서식 본문 틀 구성</label>
-              <div id="tplQuillRoot"></div>
-            </div>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex justify-end gap-2 mt-2">
-            <button id="backToListBtn" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">뒤로가기</button>
-            <button id="saveCustomTplBtn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs">
-              서식 저장하기
-            </button>
-          </div>
-        </div>
-      `;
-
-      tplQuill = new Quill(overlay.querySelector('#tplQuillRoot'), {
-        theme: 'snow',
-        placeholder: '노트를 작성할 때 나타날 기본 틀을 작성하세요...',
-        modules: {
-          toolbar: [
-            [{ header: [2, 3, false] }],
-            ['bold', 'italic', 'underline', 'blockquote'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            ['clean']
-          ]
-        }
-      });
-
-      if (existing) {
-        tplQuill.root.innerHTML = existing.bodyHtml || '';
-      } else {
-        tplQuill.root.innerHTML = PRESETS[0].html;
-      }
-
-      overlay.querySelectorAll('.preset-load-btn').forEach(btn => {
-        btn.onclick = () => {
-          const idx = parseInt(btn.dataset.pidx, 10);
-          const p = PRESETS[idx];
-          if (p && tplQuill) {
-            tplQuill.root.innerHTML = p.html;
-            const nameEl = overlay.querySelector('#customTplNameInput');
-            if (nameEl && !nameEl.value.trim()) nameEl.value = p.name;
-            showToast(`'${p.name}' 프리셋을 불러왔습니다.`);
-          }
-        };
-      });
-
-      overlay.querySelector('#cancelTplEditBtn').onclick = () => { isEditing = false; renderDialog(); };
-      overlay.querySelector('#backToListBtn').onclick = () => { isEditing = false; renderDialog(); };
-
-      overlay.querySelector('#saveCustomTplBtn').onclick = async () => {
-        const name = overlay.querySelector('#customTplNameInput').value.trim();
-        if (!name) {
-          showToast('서식 이름을 입력해주세요.');
-          return;
-        }
-
-        let bodyHtml = tplQuill ? tplQuill.root.innerHTML : '';
-        if (bodyHtml === '<p><br></p>') bodyHtml = '';
-
-        if (!state.templates[curType]) state.templates[curType] = [];
-
-        if (existing) {
-          existing.name = name;
-          existing.bodyHtml = bodyHtml;
-        } else {
-          state.templates[curType].push({ id: uid(), name, bodyHtml });
-        }
-
-        await saveAppStateToCloud();
-        showToast('서식이 저장되었습니다.');
-        isEditing = false;
-        renderDialog();
-      };
-    }
-  }
-
-  document.body.appendChild(overlay);
-  renderDialog();
-}
-
 function switchTab(tabId) {
   currentTab = tabId;
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -2465,200 +1405,419 @@ function switchTab(tabId) {
       btn.classList.add('bg-slate-100', 'text-slate-900', 'font-bold');
     }
   });
-
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) searchInput.value = '';
-
   renderCurrentView();
 }
 
-function exportAppData() {
-  try {
-    const backupPayload = {
-      exportVersion: '4.0-cloud',
-      exportedAt: new Date().toISOString(),
-      appName: 'My Input Hub',
-      userId: currentUserId,
-      data: state
-    };
+function renderBookHubView(container) {
+  const books = state.notes.book || [];
+  const wishlists = state.bookWishlist || [];
+  const yearGoal = state.bookGoals?.[currentSelectedBookYear] || 12;
+  const completedInYear = books.filter(b => (b.readDate || '').startsWith(currentSelectedBookYear));
+  const rate = Math.min(100, Math.round((completedInYear.length / Math.max(1, yearGoal)) * 100));
 
-    const jsonString = JSON.stringify(backupPayload, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+  container.innerHTML = `
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 mb-5 shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+        <div>
+          <span class="tape tape-mint text-[10px] mb-1">${currentSelectedBookYear}년 독서 목표</span>
+          <h3 class="text-sm md:text-base font-bold text-slate-800">
+            완독 <span class="tape-highlight-mint font-black">${completedInYear.length}권</span> / ${yearGoal}권 (${rate}%)
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="bookSetGoalBtn" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold">목표 변경</button>
+          <button id="bookAddWishBtn" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold">＋ 읽을 책</button>
+        </div>
+      </div>
+      <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+        <div class="h-full bg-emerald-500 rounded-full" style="width: ${rate}%;"></div>
+      </div>
+    </div>
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `input_hub_backup_${todayDate()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    <div class="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-4">
+      <div class="flex items-center gap-1.5">
+        <button id="bookTabCompBtn" class="px-3 py-1 rounded-xl text-xs font-bold ${bookSubTab === 'completed' ? 'bg-slate-900 text-white' : 'text-slate-600'}">
+          완독 서재 (${books.length})
+        </button>
+        <button id="bookTabWishBtn" class="px-3 py-1 rounded-xl text-xs font-bold ${bookSubTab === 'wishlist' ? 'bg-slate-900 text-white' : 'text-slate-600'}">
+          읽을 예정 (${wishlists.length})
+        </button>
+      </div>
+      <button id="bookTabActionBtn" class="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg">
+        ${bookSubTab === 'completed' ? '＋ 독서 메모' : '＋ 도서 등록'}
+      </button>
+    </div>
 
-    showToast('백업 파일이 안전하게 다운로드되었습니다.');
-  } catch (err) {
-    showToast('백업 파일 생성 중 오류가 발생했습니다.');
-  }
-}
+    ${bookSubTab === 'completed' ? renderCompletedBooksGrid(books) : renderWishlistGrid(wishlists)}
+  `;
 
-function importAppData(file) {
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const parsed = JSON.parse(e.target.result);
-      if (!parsed || !parsed.data) {
-        showToast('유효하지 않은 백업 파일 형식입니다.');
-        return;
-      }
-
-      state = parsed.data;
-      await saveAppStateToCloud();
-      updateSidebar();
-      renderCurrentView();
-      document.getElementById('dataManageModal')?.classList.add('hidden');
-      showToast('성공적으로 모든 데이터가 복원 및 클라우드에 반영되었습니다!');
-    } catch (err) {
-      showToast('백업 파일 읽기 실패');
-    }
+  container.querySelector('#bookSetGoalBtn').onclick = setYearlyGoalPrompt;
+  container.querySelector('#bookAddWishBtn').onclick = openAddWishlistModal;
+  container.querySelector('#bookTabCompBtn').onclick = () => { bookSubTab = 'completed'; renderCurrentView(); };
+  container.querySelector('#bookTabWishBtn').onclick = () => { bookSubTab = 'wishlist'; renderCurrentView(); };
+  container.querySelector('#bookTabActionBtn').onclick = () => {
+    if (bookSubTab === 'completed') openModal('book', null);
+    else openAddWishlistModal();
   };
-  reader.readAsText(file);
+  container.querySelectorAll('[data-open-book]').forEach(el => {
+    el.onclick = () => openModal('book', el.dataset.openBook);
+  });
+  container.querySelectorAll('[data-del-wish]').forEach(el => {
+    el.onclick = async () => {
+      state.bookWishlist = (state.bookWishlist || []).filter(item => item.id !== el.dataset.delWish);
+      await saveAppStateToCloud();
+      renderCurrentView();
+    };
+  });
+  container.querySelectorAll('[data-convert-wish]').forEach(el => {
+    el.onclick = () => convertWishlistToNote(el.dataset.convertWish);
+  });
 }
 
-function copyToClipboard(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  document.body.appendChild(ta);
-  ta.select();
-  try {
-    document.execCommand('copy');
-    showToast('클립보드에 복사되었습니다.');
-  } catch (e) {
-    showToast('복사 실패');
-  }
-  document.body.removeChild(ta);
+function renderCompletedBooksGrid(books) {
+  if (books.length === 0) return '<div class="text-center py-10 text-xs text-slate-400">완독 기록이 없습니다.</div>';
+  return `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      ${books.map(b => `
+        <div class="input-card bg-white border border-slate-200 rounded-2xl p-4 cursor-pointer flex flex-col justify-between" data-open-book="${b.id}">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="tape tape-mint text-[10px]">${(b.readDate || '').slice(0, 4) || '완독'}</span>
+              ${b.rating ? `<span class="tape tape-amber text-[10px]">⭐ ${escapeHtml(b.rating)}</span>` : ''}
+            </div>
+            <h4 class="text-xs md:text-sm font-bold text-slate-800 line-clamp-1 mb-1">${escapeHtml(b.title || '도서')}</h4>
+            <div class="text-[11px] text-slate-400 mb-2 truncate">${escapeHtml(b.author || '저자 미기재')}</div>
+            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">${escapeHtml(truncate(stripHtml(b.bodyHtml), 70))}</p>
+          </div>
+          <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-400 flex justify-between">
+            <span>${b.readDate || ''}</span>
+            <span>상세보기 →</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderWishlistGrid(wishlists) {
+  if (wishlists.length === 0) return '<div class="text-center py-10 text-xs text-slate-400">읽을 예정인 책이 없습니다.</div>';
+  return `
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      ${wishlists.map(w => `
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <span class="tape tape-mint text-[10px]">목표</span>
+              <button data-del-wish="${w.id}" class="text-slate-400 hover:text-rose-500 text-xs font-bold">✕</button>
+            </div>
+            <h4 class="text-xs md:text-sm font-bold text-slate-800 line-clamp-1">${escapeHtml(w.title)}</h4>
+            <div class="text-[11px] text-slate-400 mb-2 truncate">${escapeHtml(w.author || '저자 미상')}</div>
+          </div>
+          <button data-convert-wish="${w.id}" class="w-full mt-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">
+            완독 후 기록 쓰기 ✍
+          </button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function setYearlyGoalPrompt() {
+  const current = state.bookGoals?.[currentSelectedBookYear] || 12;
+  const overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal';
+  overlay.innerHTML = `
+    <div class="bg-white rounded-2xl w-full max-w-xs p-5 shadow-2xl border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 mb-1">${currentSelectedBookYear}년 독서 목표 권수</h3>
+      <input id="inAppGoalInput" type="number" min="1" max="999" value="${current}" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl my-3 font-bold">
+      <div class="flex justify-end gap-2">
+        <button id="cancelGoalBtn" class="px-3 py-1.5 text-xs text-slate-500">취소</button>
+        <button id="saveGoalBtn" class="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold">저장</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#cancelGoalBtn').onclick = () => overlay.remove();
+  overlay.querySelector('#saveGoalBtn').onclick = async () => {
+    const val = parseInt(overlay.querySelector('#inAppGoalInput').value, 10);
+    if (!isNaN(val) && val >= 0) {
+      if (!state.bookGoals) state.bookGoals = {};
+      state.bookGoals[currentSelectedBookYear] = val;
+      await saveAppStateToCloud();
+      showToast('목표 권수가 저장되었습니다.');
+      renderCurrentView();
+    }
+    overlay.remove();
+  };
+}
+
+function openAddWishlistModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-modal';
+  overlay.innerHTML = `
+    <div class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-2xl border border-slate-200">
+      <h3 class="text-xs font-bold text-slate-800 mb-3">읽을 책 등록</h3>
+      <input id="wishBookTitle" type="text" placeholder="도서명 *" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl mb-2">
+      <input id="wishBookAuthor" type="text" placeholder="저자 (선택)" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl mb-3">
+      <div class="flex justify-end gap-2">
+        <button id="cancelWishBtn" class="px-3 py-1.5 text-xs text-slate-500">취소</button>
+        <button id="submitWishBtn" class="px-3.5 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold">등록</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#cancelWishBtn').onclick = () => overlay.remove();
+  overlay.querySelector('#submitWishBtn').onclick = async () => {
+    const title = overlay.querySelector('#wishBookTitle').value.trim();
+    if (!title) return;
+    if (!state.bookWishlist) state.bookWishlist = [];
+    state.bookWishlist.push({
+      id: uid(),
+      title,
+      author: overlay.querySelector('#wishBookAuthor').value.trim(),
+      targetYear: currentSelectedBookYear,
+      addedDate: todayDate()
+    });
+    await saveAppStateToCloud();
+    showToast('위시리스트에 추가되었습니다.');
+    overlay.remove();
+    renderCurrentView();
+  };
+}
+
+function convertWishlistToNote(wishId) {
+  const item = (state.bookWishlist || []).find(w => w.id === wishId);
+  if (!item) return;
+  openModal('book', null);
+  setTimeout(() => {
+    const t = document.getElementById('field_title');
+    const a = document.getElementById('field_author');
+    if (t) t.value = item.title || '';
+    if (a) a.value = item.author || '';
+  }, 100);
+}
+
+function renderReportDashboard(container) {
+  if (!reportPeriod) reportPeriod = todayDate().slice(0, 7);
+  const inPeriod = (d) => d && d.startsWith(reportPeriod);
+
+  let totalPeriodInputs = 0;
+  const categoryCounts = state.categories.map(cat => {
+    const c = (state.notes[cat.id] || []).filter(n => inPeriod(n.date || n.readDate || n.scrapDate || n.updatedAt)).length;
+    totalPeriodInputs += c;
+    return { cat, count: c };
+  });
+
+  const verified = (state.notes.idea || []).filter(i => (i.outcome || '대기중') !== '대기중' && inPeriod(i.reviewDate || i.updatedAt));
+  const hits = verified.filter(i => i.outcome === '적중').length;
+  const accuracy = verified.length > 0 ? Math.round((hits / verified.length) * 100) : null;
+
+  container.innerHTML = `
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-4 shadow-2xs flex items-center justify-between">
+      <div class="text-xs font-bold text-slate-800">${reportPeriod} 기간 통계</div>
+      <div class="flex items-center gap-2">
+        <button id="repPrevBtn" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 font-bold">‹</button>
+        <button id="repNextBtn" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 font-bold">›</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl">
+        <div class="text-[10px] font-bold text-slate-400 uppercase">기간 총 인풋</div>
+        <div class="text-2xl font-black text-slate-800 mt-1">${totalPeriodInputs} <span class="text-xs font-medium text-slate-400">건</span></div>
+      </div>
+      <div class="bg-white border border-slate-200 p-4 rounded-2xl">
+        <div class="text-[10px] font-bold text-slate-400 uppercase">가설 적중률</div>
+        <div class="text-2xl font-black ${accuracy !== null && accuracy >= 50 ? 'text-emerald-600' : 'text-slate-700'} mt-1">
+          ${accuracy !== null ? accuracy + '%' : '검증 없음'}
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 p-4 rounded-2xl">
+      <h4 class="text-xs font-bold text-slate-800 mb-3">서랍별 비중</h4>
+      <div class="space-y-2">
+        ${categoryCounts.map(({ cat, count }) => {
+          const pct = totalPeriodInputs > 0 ? Math.round((count / totalPeriodInputs) * 100) : 0;
+          return `
+            <div>
+              <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm ${cat.dotClass}"></span>${escapeHtml(cat.name)}</span>
+                <span>${count}건 (${pct}%)</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div class="h-full rounded-full ${cat.dotClass}" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  container.querySelector('#repPrevBtn').onclick = () => {
+    const [y, m] = reportPeriod.split('-').map(Number);
+    const d = new Date(y, m - 2, 1);
+    reportPeriod = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    renderCurrentView();
+  };
+  container.querySelector('#repNextBtn').onclick = () => {
+    const [y, m] = reportPeriod.split('-').map(Number);
+    const d = new Date(y, m, 1);
+    reportPeriod = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    renderCurrentView();
+  };
 }
 
 document.getElementById('modalCloseBtn')?.addEventListener('click', closeModal);
 document.getElementById('toggleNotionWidthBtn')?.addEventListener('click', () => {
   isNotionFullWidth = !isNotionFullWidth;
-  const sheet = document.getElementById('modalSheet');
-  const widthLabel = document.getElementById('widthToggleLabel');
-  if (sheet) {
-    sheet.className = `modal-sheet w-full bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-modal ${isNotionFullWidth ? 'sheet-full' : 'sheet-normal'}`;
-  }
-  if (widthLabel) widthLabel.textContent = isNotionFullWidth ? '표준 폭으로' : '페이지 넓게';
+  renderModalUI();
+});
+document.getElementById('quickCreateBtn')?.addEventListener('click', () => {
+  let t = currentTab === 'home' || currentTab === 'report' ? 'concept' : currentTab;
+  openModal(t, null);
+  closeMobileSidebar();
 });
 
-document.getElementById('modalContainer')?.addEventListener('click', (e) => {
-  if (e.target.id === 'modalContainer') closeModal();
+document.getElementById('addCategoryBtn')?.addEventListener('click', () => {
+  document.getElementById('categoryModal')?.classList.remove('hidden');
+  closeMobileSidebar();
+});
+document.getElementById('closeCategoryModalBtn')?.addEventListener('click', () => {
+  document.getElementById('categoryModal')?.classList.add('hidden');
+});
+document.getElementById('cancelCategoryModalBtn')?.addEventListener('click', () => {
+  document.getElementById('categoryModal')?.classList.add('hidden');
 });
 
-document.getElementById('addCategoryBtn')?.addEventListener('click', openNewCategoryModal);
-document.getElementById('closeCategoryModalBtn')?.addEventListener('click', closeNewCategoryModal);
-document.getElementById('cancelCategoryModalBtn')?.addEventListener('click', closeNewCategoryModal);
-document.getElementById('submitNewCategoryBtn')?.addEventListener('click', handleCreateNewCategory);
-
-document.getElementById('presetSimpleBtn')?.addEventListener('click', () => applyFieldPreset('simple'));
-document.getElementById('presetLectureBtn')?.addEventListener('click', () => applyFieldPreset('lecture'));
-document.getElementById('presetWebBtn')?.addEventListener('click', () => applyFieldPreset('web'));
-document.getElementById('presetReviewBtn')?.addEventListener('click', () => applyFieldPreset('review'));
+// 프리셋 버튼
+document.getElementById('presetSimpleBtn')?.addEventListener('click', () => {
+  document.getElementById('fieldToggleUrl').checked = false;
+  document.getElementById('fieldToggleSub').checked = false;
+  document.getElementById('fieldToggleRating').checked = false;
+  document.getElementById('subFieldNameArea').classList.add('hidden');
+});
+document.getElementById('presetLectureBtn')?.addEventListener('click', () => {
+  document.getElementById('fieldToggleUrl').checked = false;
+  document.getElementById('fieldToggleSub').checked = true;
+  document.getElementById('subFieldLabelInput').value = '강사명 / 기관';
+  document.getElementById('fieldToggleRating').checked = false;
+  document.getElementById('subFieldNameArea').classList.remove('hidden');
+});
+document.getElementById('presetWebBtn')?.addEventListener('click', () => {
+  document.getElementById('fieldToggleUrl').checked = true;
+  document.getElementById('fieldToggleSub').checked = false;
+  document.getElementById('fieldToggleRating').checked = false;
+  document.getElementById('subFieldNameArea').classList.add('hidden');
+});
+document.getElementById('presetReviewBtn')?.addEventListener('click', () => {
+  document.getElementById('fieldToggleUrl').checked = false;
+  document.getElementById('fieldToggleSub').checked = true;
+  document.getElementById('subFieldLabelInput').value = '저자 / 대상';
+  document.getElementById('fieldToggleRating').checked = true;
+  document.getElementById('subFieldNameArea').classList.remove('hidden');
+});
 
 document.getElementById('fieldToggleSub')?.addEventListener('change', (e) => {
-  const area = document.getElementById('subFieldNameArea');
-  if (e.target.checked) area.classList.remove('hidden');
-  else area.classList.add('hidden');
+  document.getElementById('subFieldNameArea').classList.toggle('hidden', !e.target.checked);
 });
 
-document.getElementById('quickCreateBtn')?.addEventListener('click', () => {
-  let target = currentTab;
-  if (target === 'home' || target === 'report') target = 'concept';
-  openModal(target, null);
+// 색상 선택 UI 초기화
+const colorPickerGroup = document.getElementById('catColorPickerGroup');
+if (colorPickerGroup) {
+  colorPickerGroup.innerHTML = THEME_COLORS.map(c => `
+    <button type="button" data-color-id="${c.id}" class="py-1 px-1.5 rounded-lg border border-slate-200 text-[10px] font-semibold flex items-center justify-center gap-1 hover:bg-slate-100 ${c.id === 'mint' ? 'ring-2 ring-slate-800' : ''}">
+      <span class="w-2 h-2 rounded-full ${c.dotClass}"></span>
+      <span>${c.name}</span>
+    </button>
+  `).join('');
+
+  colorPickerGroup.querySelectorAll('[data-color-id]').forEach(btn => {
+    btn.onclick = () => {
+      selectedColorId = btn.dataset.colorId;
+      colorPickerGroup.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-slate-800'));
+      btn.classList.add('ring-2', 'ring-slate-800');
+    };
+  });
+}
+
+document.getElementById('submitNewCategoryBtn')?.addEventListener('click', async () => {
+  const name = document.getElementById('newCatNameInput').value.trim();
+  if (!name) return;
+  const col = THEME_COLORS.find(c => c.id === selectedColorId) || THEME_COLORS[0];
+  const newCat = {
+    id: 'cat_' + uid(),
+    name: name,
+    tapeClass: col.tapeClass,
+    dotClass: col.dotClass,
+    group: 'input',
+    fixed: false,
+    fields: {
+      hasUrl: document.getElementById('fieldToggleUrl').checked,
+      hasSub: document.getElementById('fieldToggleSub').checked,
+      subLabel: document.getElementById('subFieldLabelInput').value.trim() || '보조',
+      hasRating: document.getElementById('fieldToggleRating').checked
+    }
+  };
+  state.categories.push(newCat);
+  state.notes[newCat.id] = [];
+  await saveAppStateToCloud();
+  document.getElementById('categoryModal')?.classList.add('hidden');
+  updateSidebar();
+  switchTab(newCat.id);
 });
 
-document.getElementById('templateManageBtn')?.addEventListener('click', () => openTemplateManagerDialog(currentTab));
-
-// 클라우드 설정 모달 이벤트
-document.getElementById('cloudConfigBtn')?.addEventListener('click', () => {
-  document.getElementById('cloudModal')?.classList.remove('hidden');
-  renderUserIdDisplay();
-  const savedConfig = localStorage.getItem('hub_custom_firebase_config') || '';
-  const area = document.getElementById('customFirebaseConfigInput');
-  if (area) area.value = savedConfig;
-});
-document.getElementById('closeCloudModalBtn')?.addEventListener('click', () => {
-  document.getElementById('cloudModal')?.classList.add('hidden');
-});
-
-document.getElementById('copyUidBtn')?.addEventListener('click', () => {
-  if (currentUserId) copyToClipboard(currentUserId);
-});
-document.getElementById('copyUidModalBtn')?.addEventListener('click', () => {
-  if (currentUserId) copyToClipboard(currentUserId);
-});
-
-document.getElementById('switchUidBtn')?.addEventListener('click', () => {
-  const targetId = document.getElementById('syncTargetUidInput').value.trim();
-  if (!targetId) {
-    showToast('변경할 사용자 ID를 입력하세요.');
-    return;
-  }
-  localStorage.setItem('hub_shared_uid', targetId);
-  currentUserId = targetId;
-  renderUserIdDisplay();
-  startRealtimeListener();
-  document.getElementById('cloudModal')?.classList.add('hidden');
-  showToast(`동기화 ID가 변경되어 데이터를 연결합니다.`);
-});
-
-document.getElementById('saveCustomConfigBtn')?.addEventListener('click', () => {
-  const cfg = document.getElementById('customFirebaseConfigInput').value.trim();
-  if (!cfg) {
-    localStorage.removeItem('hub_custom_firebase_config');
-    showToast('커스텀 Firebase 설정이 초기화되었습니다.');
-    return;
-  }
-  try {
-    JSON.parse(cfg);
-    localStorage.setItem('hub_custom_firebase_config', cfg);
-    showToast('설정이 저장되었습니다. 새로고침 시 적용됩니다.');
-    setTimeout(() => location.reload(), 800);
-  } catch (e) {
-    showToast('유효한 JSON 형식이 아닙니다.');
-  }
-});
-
-// 데이터 백업 모달 이벤트
+// 데이터 백업 및 복원
 document.getElementById('dataManageBtn')?.addEventListener('click', () => {
   document.getElementById('dataManageModal')?.classList.remove('hidden');
 });
 document.getElementById('closeDataModalBtn')?.addEventListener('click', () => {
   document.getElementById('dataManageModal')?.classList.add('hidden');
 });
-document.getElementById('exportJsonBtn')?.addEventListener('click', exportAppData);
+document.getElementById('exportJsonBtn')?.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({ data: state }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `input_hub_backup_${todayDate()}.json`;
+  a.click();
+});
 document.getElementById('triggerImportBtn')?.addEventListener('click', () => {
   document.getElementById('importJsonFileInput')?.click();
 });
 document.getElementById('importJsonFileInput')?.addEventListener('change', (e) => {
   const file = e.target.files?.[0];
-  if (file) importAppData(file);
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      if (parsed.data) {
+        state = parsed.data;
+        await saveAppStateToCloud();
+        updateSidebar();
+        renderCurrentView();
+        document.getElementById('dataManageModal')?.classList.add('hidden');
+        showToast('복원 완료!');
+      }
+    } catch (err) {
+      showToast('파일 읽기 실패');
+    }
+  };
+  reader.readAsText(file);
 });
 
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
+// 검색 바
 document.getElementById('searchInput')?.addEventListener('input', (e) => {
   const q = e.target.value.trim().toLowerCase();
-  const cards = document.querySelectorAll('.input-card');
-  cards.forEach(card => {
+  document.querySelectorAll('.input-card').forEach(card => {
     const text = (card.dataset.search || '').toLowerCase();
     card.style.display = (!q || text.includes(q)) ? '' : 'none';
   });
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-  initCloudSync();
+  initFirebase();
 });
 </script>
 </body>
